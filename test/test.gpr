@@ -8,13 +8,13 @@ project Test is
    for Object_Dir use ".build-" & Test_Config.Build_Profile;
    for Create_Missing_Dirs use "True";
 
-   Compiler_Switches := Test_Config.Ada_Compiler_Switches;
-   case Test_Config.Build_Profile is
-      when "development" =>
-         Compiler_Switches := Compiler_Switches & ("-gnata");
-      when others =>
-         null;
-   end case;
+   Compiler_Switches := Test_Config.Ada_Compiler_Switches & ("-gnatw_A");
+   --  case Test_Config.Build_Profile is
+   --     when "development" =>
+   --        Compiler_Switches := Compiler_Switches & ("-gnata");
+   --     when others =>
+   --        null;
+   --  end case;
 
    package Compiler is
       for Default_Switches ("Ada") use Compiler_Switches;
