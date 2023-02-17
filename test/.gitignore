@@ -1,0 +1,10 @@
+/obj/
+/bin/
+/alire/
+/config/
+
+.build*
+
+test
+test_vectors
+test_maps

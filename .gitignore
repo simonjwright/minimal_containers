@@ -5,7 +5,4 @@
 
 .build/
 
-test_maps
-test_vectors
-
 gpr_query.db*
