@@ -1,9 +1,9 @@
-with Containers.Vectors;
+with Minimal_Containers.Vectors;
 with Ada.Text_IO; use Ada.Text_IO;
 procedure Test_Vectors
 is
    type Index_Type is range 10 .. 20;
-   package My_Vectors is new Containers.Vectors (Index_Type, Integer);
+   package My_Vectors is new Minimal_Containers.Vectors (Index_Type, Integer);
    use My_Vectors;
    V : Vector (5);
    procedure Report (Message : String) is

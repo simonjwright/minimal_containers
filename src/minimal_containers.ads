@@ -1,4 +1,4 @@
-package Containers is
+package Minimal_Containers is
 
    Capacity_Error : exception;
 
@@ -6,4 +6,4 @@ package Containers is
 
    type Hash_Type is range 0 .. 2**31 - 1;
 
-end Containers;
+end Minimal_Containers;

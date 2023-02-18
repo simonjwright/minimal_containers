@@ -1,4 +1,4 @@
-package body Containers.Vectors
+package body Minimal_Containers.Vectors
 is
 
    procedure Append (Container : in out Vector; New_Item : Element_Type)
@@ -31,4 +31,4 @@ is
       Container.Last := Container.Last - 1;
    end Delete;
 
-end Containers.Vectors;
+end Minimal_Containers.Vectors;

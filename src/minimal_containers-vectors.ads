@@ -2,7 +2,7 @@ generic
    type Index_Type is range <>;
    type Element_Type is private;
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
-package Containers.Vectors
+package Minimal_Containers.Vectors
 is
 
    subtype Extended_Index is Index_Type'Base
@@ -118,4 +118,4 @@ private
          then Extended_Index'Succ (Position)
          else No_Index);
 
-end Containers.Vectors;
+end Minimal_Containers.Vectors;

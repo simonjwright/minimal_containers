@@ -1,4 +1,4 @@
-private with Containers.Vectors;
+private with Minimal_Containers.Vectors;
 private with System;
 
 generic
@@ -10,7 +10,7 @@ generic
      (Left  : Key_Type;
       Right : Key_Type) return Boolean is "=";
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
-package Containers.Hashed_Maps
+package Minimal_Containers.Hashed_Maps
 is
 
    type Map (Capacity : Count_Type; Modulus : Hash_Type) is private
@@ -106,4 +106,4 @@ private
    function Capacity (Container : Map) return Count_Type
      is (Container.Capacity);
 
-end Containers.Hashed_Maps;
+end Minimal_Containers.Hashed_Maps;

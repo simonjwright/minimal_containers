@@ -1,6 +1,6 @@
 with AUnit.Assertions; use AUnit.Assertions;
 with AUnit.Test_Cases; use AUnit.Test_Cases;
-with Containers.Vectors;
+with Minimal_Containers.Vectors;
 
 package body Vectors_Tests is
 
@@ -18,11 +18,11 @@ package body Vectors_Tests is
       overriding function Name (C : T) return AUnit.Message_String
         is (Format ("Vectors"));
 
-      use Containers; -- for Count_Type
+      use Minimal_Containers; -- for Count_Type
 
       subtype Index_Type is Integer range 10 .. 14;
 
-      package Vectors_For_Test is new Containers.Vectors
+      package Vectors_For_Test is new Minimal_Containers.Vectors
         (Index_Type   => Index_Type,
          Element_Type => Integer);
       use Vectors_For_Test;
@@ -30,7 +30,7 @@ package body Vectors_Tests is
       procedure Initial (Unused : in out AUnit.Test_Cases.Test_Case'Class)
       is
          V : Vector (Capacity => 5);
-         use type Containers.Count_Type;
+         use type Minimal_Containers.Count_Type;
       begin
          Assert (Length (V) = 0, "new vector has non-zero length");
       end Initial;
@@ -69,7 +69,7 @@ package body Vectors_Tests is
             Assert (Element (V, J + 9) = -J, "element has wrong value (a)");
          end loop;
          for J in V loop
-            --  The index of the fist element is 10
+            --  The index of the first element is 10
             Assert (Element (V, J) = -(J - 9), "element has wrong value (b)");
          end loop;
          declare
@@ -81,6 +81,25 @@ package body Vectors_Tests is
             end loop;
          end;
       end Values;
+
+      procedure Out_Of_Range (Unused : in out AUnit.Test_Cases.Test_Case'Class)
+      is
+         V : Vector (Capacity => 5);
+      begin
+         --  add indices 10 .. 13
+         for J in 1 .. 4 loop
+            Append (V, -J);
+         end loop;
+         --  try to access index 14
+         declare
+            Unused : Integer := 0;
+         begin
+            Unused := Element (V, 14);
+            Assert (False, "should have raised Constraint_Error");
+         exception
+            when Constraint_Error => null;
+         end;
+      end Out_Of_Range;
 
       --  XXX more to come!
 
@@ -94,7 +113,9 @@ package body Vectors_Tests is
          Registration.Register_Routine
            (C, Too_Many'Access, "add too many");
          Registration.Register_Routine
-           (C, Values'Access, "values");
+           (C, Values'Access, "values, loops");
+         Registration.Register_Routine
+           (C, Out_Of_Range'Access, "out-of-range access");
       end Register_Tests;
 
    end Tests;

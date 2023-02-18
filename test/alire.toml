@@ -9,10 +9,10 @@ maintainers-logins = ["simonjwright"]
 executables = ["test"]
 
 [[depends-on]]
-containers = "*"
+minimal_containers = "*"
 
 [[pins]]
-containers = { path='..' }
+minimal_containers = { path='..' }
 
 [[depends-on]]
 aunit = "^23.0.0"
