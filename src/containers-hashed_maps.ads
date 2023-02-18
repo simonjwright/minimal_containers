@@ -27,6 +27,8 @@ is
 
    No_Element : constant Cursor;
 
+   function Capacity (Container : Map) return Count_Type;
+
    function Length (Container : Map) return Count_Type
    with
      Post   => Length'Result <= Container.Capacity;
@@ -83,7 +85,7 @@ private
    type Generation_Type is mod 2**32; -- for tampering checks
 
    type Map (Capacity : Count_Type; Modulus : Hash_Type) is record
-      Generation : Generation_Type;
+      Generation : Generation_Type := 0;
       Keys       : Key_Vectors.Vector (Capacity => Capacity);
       Elements   : Element_Vectors.Vector (Capacity => Capacity);
    end record
@@ -101,24 +103,7 @@ private
                                     Generation => 0,
                                     Node       => 0);
 
-   --  function Length (Container : Map) return Count_Type
-   --    is (Length (Container.Keys));
-
-   --  function Is_Empty (Container : Map) return Boolean
-   --    is (Length (Container.Keys) = 0);
-
-   --  function Key (Container : Map; Position : Cursor) return Key_Type
-   --    is (Element (Container.Keys, Positive (Position.Node)).Key);
-
-   --  function First (Container : Map) return Cursor
-   --    is (Cursor'(Node => 1));
-
-   --  function Next (Container : Map; Position : Cursor) return Cursor
-   --    is (if Position.Node in 1 .. Length (Container)
-   --        then Cursor'(Node => Count_Type'Succ (Position.Node))
-   --        else No_Element);
-
-   --  function Has_Element (Container : Map; Position : Cursor) return Boolean
-   --    is (Position.Node in 1 .. Length (Container));
+   function Capacity (Container : Map) return Count_Type
+     is (Container.Capacity);
 
 end Containers.Hashed_Maps;
