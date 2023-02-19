@@ -16,11 +16,11 @@ is
 
    type Vector (Capacity : Capacity_Range) is private
    with
-     --  Default_Initial_Condition => Is_Empty (Vector),
+     Default_Initial_Condition => Is_Empty (Vector),
      Iterable => (First       => Iter_First,
                   Has_Element => Iter_Has_Element,
                   Next        => Iter_Next,
-                  Element     => Element);
+                  Element     => Iter_Element);
    --  The 4-argument Iterable gives us for .. in and for .. of.
 
    function Empty_Vector return Vector;
@@ -32,8 +32,7 @@ is
    function Is_Empty (Container : Vector) return Boolean;
 
    function Element (Container : Vector;
-                     Index : Extended_Index) return Element_Type
-   with Pre => Index in Index_Type;
+                     Index : Index_Type) return Element_Type;
 
    procedure Append (Container : in out Vector; New_Item : Element_Type)
    with
@@ -65,6 +64,10 @@ is
      (Container : Vector;
       Position  : Extended_Index) return Extended_Index;
 
+   function Iter_Element
+     (Container : Vector;
+      Position  : Extended_index) return Element_Type;
+
 private
 
    subtype Array_Index is Capacity_Range range 1 .. Capacity_Range'Last;
@@ -90,12 +93,14 @@ private
      is (Length (Container) = 0);
 
    function Element (Container : Vector;
-                     Index : Extended_Index) return Element_Type
-     is (Container.Elements
+                     Index : Index_Type) return Element_Type
+     is (if Index <= Container.Last
+         then Container.Elements
            (Capacity_Range
               (Index_Type'Pos (Index))
               - Index_Type'Pos (Index_Type'First)
-              + 1));
+              + 1)
+         else raise Constraint_Error with "invalid index in iterator");
 
    function First_Index (Container : Vector) return Index_Type
      is (Index_Type'First);
@@ -114,8 +119,19 @@ private
    function Iter_Next
      (Container : Vector;
       Position  : Extended_Index) return Extended_Index
-     is (if Position < Container.Last
+     is (if Position in Index_Type'First .. Container.Last - 1
          then Extended_Index'Succ (Position)
          else No_Index);
+
+   function Iter_Element
+     (Container : Vector;
+      Position  : Extended_Index) return Element_Type
+     is (if Position in Index_Type'First .. Container.Last
+         then Container.Elements
+           (Capacity_Range
+              (Index_Type'Pos (Position))
+              - Index_Type'Pos (Index_Type'First)
+              + 1)
+         else raise Program_Error with "invalid index in iterator");
 
 end Minimal_Containers.Vectors;
