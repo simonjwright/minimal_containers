@@ -1,9 +1,10 @@
-with Minimal_Containers.Hashed_Maps;
+with Ada.Containers;
+with Minimal_Containers.Bounded_Hashed_Maps;
 with Ada.Text_IO; use Ada.Text_IO;
 procedure Test_Maps is
-   function Hash (Key : Natural) return Minimal_Containers.Hash_Type
-   is (Minimal_Containers.Hash_Type (Key));
-   package My_Maps is new Minimal_Containers.Hashed_Maps
+   function Hash (Key : Natural) return Ada.Containers.Hash_Type
+   is (Ada.Containers.Hash_Type (Key));
+   package My_Maps is new Minimal_Containers.Bounded_Hashed_Maps
      (Key_Type     => Natural,
       Element_Type => Integer,
       Hash         => Hash);

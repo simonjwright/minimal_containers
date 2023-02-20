@@ -1,19 +1,23 @@
-private with Minimal_Containers.Vectors;
+with Ada.Containers;
+private with Minimal_Containers.Bounded_Vectors;
 private with System;
 
 generic
    type Key_Type is private;
    type Element_Type is private;
 
-   with function Hash (Key : Key_Type) return Hash_Type;
+   with function Hash (Key : Key_Type) return Ada.Containers.Hash_Type;
    with function Equivalent_Keys
      (Left  : Key_Type;
       Right : Key_Type) return Boolean is "=";
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
-package Minimal_Containers.Hashed_Maps
+package Minimal_Containers.Bounded_Hashed_Maps
 is
 
-   type Map (Capacity : Count_Type; Modulus : Hash_Type) is private
+   use Ada.Containers;
+
+   type Map (Capacity : Count_Type;
+             Modulus : Ada.Containers.Hash_Type) is private
    with
      Default_Initial_Condition => Is_Empty (Map),
      Iterable => (First       => First,
@@ -74,17 +78,18 @@ private
    --  This Map behaves as though the Hash function always returns 0,
    --  so that there is only one hash bucket.
 
-   package Key_Vectors is new Vectors
+   package Key_Vectors is new Bounded_Vectors
      (Index_Type => Positive, Element_Type => Key_Type);
    use Key_Vectors;
 
-   package Element_Vectors is new Vectors
+   package Element_Vectors is new Bounded_Vectors
      (Index_Type => Positive, Element_Type => Element_Type);
    use Element_Vectors;
 
    type Generation_Type is mod 2**32; -- for tampering checks
 
-   type Map (Capacity : Count_Type; Modulus : Hash_Type) is record
+   type Map (Capacity : Count_Type;
+             Modulus : Ada.Containers.Hash_Type) is record
       Generation : Generation_Type := 0;
       Keys       : Key_Vectors.Vector (Capacity => Capacity);
       Elements   : Element_Vectors.Vector (Capacity => Capacity);
@@ -106,4 +111,4 @@ private
    function Capacity (Container : Map) return Count_Type
      is (Container.Capacity);
 
-end Minimal_Containers.Hashed_Maps;
+end Minimal_Containers.Bounded_Hashed_Maps;

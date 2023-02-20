@@ -1,6 +1,7 @@
 with AUnit.Assertions; use AUnit.Assertions;
 with AUnit.Test_Cases; use AUnit.Test_Cases;
-with Minimal_Containers.Vectors;
+with Ada.Containers;
+with Minimal_Containers.Bounded_Vectors;
 
 package body Vectors_Tests is
 
@@ -18,11 +19,11 @@ package body Vectors_Tests is
       overriding function Name (C : T) return AUnit.Message_String
         is (Format ("Vectors"));
 
-      use Minimal_Containers; -- for Count_Type
+      use Ada.Containers; -- for Count_Type, Capacity_Error
 
       subtype Index_Type is Integer range 10 .. 14;
 
-      package Vectors_For_Test is new Minimal_Containers.Vectors
+      package Vectors_For_Test is new Minimal_Containers.Bounded_Vectors
         (Index_Type   => Index_Type,
          Element_Type => Integer);
       use Vectors_For_Test;
@@ -30,7 +31,6 @@ package body Vectors_Tests is
       procedure Initial (Unused : in out AUnit.Test_Cases.Test_Case'Class)
       is
          V : Vector (Capacity => 5);
-         use type Minimal_Containers.Count_Type;
       begin
          Assert (Length (V) = 0, "new vector has non-zero length");
       end Initial;

@@ -1,6 +1,8 @@
 with AUnit.Assertions; use AUnit.Assertions;
 with AUnit.Test_Cases; use AUnit.Test_Cases;
-with Minimal_Containers.Hashed_Maps;
+
+with Ada.Containers;
+with Minimal_Containers.Bounded_Hashed_Maps;
 
 package body Maps_Tests is
 
@@ -18,13 +20,13 @@ package body Maps_Tests is
       overriding function Name (C : T) return AUnit.Message_String
         is (Format ("Maps"));
 
-      use Minimal_Containers; -- for Count_Type
+      use Ada.Containers; -- for Count_Type, Hash_Type, Capacity_Error
 
       subtype Key_Type is Positive;
 
       function Hash (Key : Key_Type) return Hash_Type is (Hash_Type (Key));
 
-      package Maps_For_Test is new Minimal_Containers.Hashed_Maps
+      package Maps_For_Test is new Minimal_Containers.Bounded_Hashed_Maps
         (Key_Type     => Key_Type,
          Element_Type => Integer,
          Hash         => Hash);
@@ -33,7 +35,6 @@ package body Maps_Tests is
       procedure Initial (Unused : in out AUnit.Test_Cases.Test_Case'Class)
       is
          M : Map (Capacity => 5, Modulus => 42);
-         use type Minimal_Containers.Count_Type;
       begin
          Assert (Length (M) = 0, "new vector has non-zero length");
       end Initial;

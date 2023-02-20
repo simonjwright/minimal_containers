@@ -1,9 +1,13 @@
+with Ada.Containers;
+
 generic
    type Index_Type is range <>;
    type Element_Type is private;
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
-package Minimal_Containers.Vectors
+package Minimal_Containers.Bounded_Vectors
 is
+
+   use Ada.Containers;
 
    subtype Extended_Index is Index_Type'Base
      range Index_Type'First - 1 ..
@@ -134,4 +138,4 @@ private
               + 1)
          else raise Program_Error with "invalid index in iterator");
 
-end Minimal_Containers.Vectors;
+end Minimal_Containers.Bounded_Vectors;

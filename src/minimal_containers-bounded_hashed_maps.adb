@@ -1,4 +1,4 @@
-package body Minimal_Containers.Hashed_Maps is
+package body Minimal_Containers.Bounded_Hashed_Maps is
 
    procedure Check_Cursor_Validity (For_The_Container : Map;
                                     The_Cursor : Cursor);
@@ -127,4 +127,4 @@ package body Minimal_Containers.Hashed_Maps is
       end if;
    end Check_Cursor_Validity;
 
-end Minimal_Containers.Hashed_Maps;
+end Minimal_Containers.Bounded_Hashed_Maps;

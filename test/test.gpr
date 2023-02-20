@@ -1,7 +1,7 @@
 with "config/test_config.gpr";
 project Test is
 
-   for Main use ("test.adb", "test_maps.adb", "test_vectors.adb");
+   for Main use ("test.adb");
    for Exec_Dir use ".";
 
    for Source_Dirs use ("src/", "config/");
