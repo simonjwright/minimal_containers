@@ -71,6 +71,9 @@ is
 
    function Element (Container : Map; Key : Key_Type) return Element_Type;
 
+   function Contains (Container : Map;
+                      Key       : Key_Type) return Boolean;
+
    function Has_Element (Container : Map; Position : Cursor) return Boolean;
 
 private
@@ -88,12 +91,13 @@ private
 
    type Generation_Type is mod 2**32; -- for tampering checks
 
-   type Map (Capacity : Count_Type;
-             Modulus : Ada.Containers.Hash_Type) is record
-      Generation : Generation_Type := 0;
-      Keys       : Key_Vectors.Vector (Capacity => Capacity);
-      Elements   : Element_Vectors.Vector (Capacity => Capacity);
-   end record
+   type Map
+     (Capacity : Count_Type;
+      Modulus : Ada.Containers.Hash_Type) is record
+         Generation : Generation_Type := 0;
+         Keys       : Key_Vectors.Vector (Capacity => Capacity);
+         Elements   : Element_Vectors.Vector (Capacity => Capacity);
+      end record
    with Predicate => Length (Elements) = Length (Keys);
 
    Empty_Map : constant Map := (Capacity => 0, Modulus => 0, others => <>);

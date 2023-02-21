@@ -58,6 +58,11 @@ is
      Post => Count_Type (Last_Index'Result - Index_Type'First + 1)
              = Length (Container);
 
+   function Find_Index (Container : Vector;
+                        Item      : Element_Type;
+                        Index     : Index_Type := Index_Type'First)
+                       return Extended_Index;
+
    function Iter_First (Container : Vector) return Extended_Index;
 
    function Iter_Has_Element
@@ -70,7 +75,7 @@ is
 
    function Iter_Element
      (Container : Vector;
-      Position  : Extended_index) return Element_Type;
+      Position  : Extended_Index) return Element_Type;
 
 private
 

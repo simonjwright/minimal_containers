@@ -89,6 +89,24 @@ package body Maps_Tests is
          end;
       end Values;
 
+      procedure Containing (Unused : in out AUnit.Test_Cases.Test_Case'Class)
+      is
+         M : Map (Capacity => 5, Modulus => 42);
+      begin
+         for J in 1 .. 5 loop
+            Insert (M, J, -J);
+         end loop;
+         declare
+            Count : Positive := 1;
+         begin
+            for J in 1 .. 5 loop
+               Assert (Contains (M, J), "element not found");
+               Count := Count + 1;
+            end loop;
+         end;
+         Assert (not Contains (M, 42), "missing element found");
+      end Containing;
+
       procedure Out_Of_Range (Unused : in out AUnit.Test_Cases.Test_Case'Class)
       is
          M : Map (Capacity => 5, Modulus => 42);
@@ -119,6 +137,8 @@ package body Maps_Tests is
            (C, Too_Many'Access, "add too many");
          Registration.Register_Routine
            (C, Values'Access, "values, loops");
+         Registration.Register_Routine
+           (C, Containing'Access, "contains");
          Registration.Register_Routine
            (C, Out_Of_Range'Access, "out-of-range access");
       end Register_Tests;

@@ -31,4 +31,22 @@ is
       Container.Last := Container.Last - 1;
    end Delete;
 
+   function Find_Index (Container : Vector;
+                        Item      : Element_Type;
+                        Index     : Index_Type := Index_Type'First)
+                       return Extended_Index
+   is
+      Start_Index : constant Capacity_Range
+        := Capacity_Range (Index - Index_Type'First + 1);
+      Last_Index : constant Capacity_Range
+        := Capacity_Range (Container.Last - Index_Type'First + 1);
+   begin
+      for J in Start_Index .. Last_Index loop
+         if Container.Elements (J) = Item then
+            return Extended_Index (J + Count_Type (Index_Type'First - 1));
+         end if;
+      end loop;
+      return No_Index;
+   end Find_Index;
+
 end Minimal_Containers.Bounded_Vectors;

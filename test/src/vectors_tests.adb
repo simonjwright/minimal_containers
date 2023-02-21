@@ -82,6 +82,25 @@ package body Vectors_Tests is
          end;
       end Values;
 
+      procedure Finding_Index
+        (Unused : in out AUnit.Test_Cases.Test_Case'Class)
+      is
+         V : Vector (Capacity => 5);
+      begin
+         for J in 1 .. 5 loop
+            Append (V, -J);
+            Assert (Length (V) = Count_Type (J), "vector has wrong length");
+            --  The index of the fist element is 10
+            Assert (Element (V, J + 9) = -J, "element has wrong value (a)");
+         end loop;
+         for J in 1 .. 5 loop
+            Assert (Find_Index (V, -J) = J + 9,
+                    "find_index found wrong index");
+         end loop;
+         Assert (Find_Index (V, -6) = No_Index,
+                 "find_index succeeded for missing element");
+      end Finding_Index;
+
       procedure Out_Of_Range (Unused : in out AUnit.Test_Cases.Test_Case'Class)
       is
          V : Vector (Capacity => 5);
@@ -114,6 +133,8 @@ package body Vectors_Tests is
            (C, Too_Many'Access, "add too many");
          Registration.Register_Routine
            (C, Values'Access, "values, loops");
+         Registration.Register_Routine
+           (C, Finding_Index'Access, "find_index");
          Registration.Register_Routine
            (C, Out_Of_Range'Access, "out-of-range access");
       end Register_Tests;

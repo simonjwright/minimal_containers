@@ -105,6 +105,10 @@ package body Minimal_Containers.Bounded_Hashed_Maps is
       return Element (Container, C);
    end Element;
 
+   function Contains (Container : Map;
+                      Key       : Key_Type) return Boolean
+   is (Find (Container, Key) /= No_Element);
+
    function Has_Element (Container : Map; Position : Cursor) return Boolean
    is
    begin
