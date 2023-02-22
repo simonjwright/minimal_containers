@@ -23,12 +23,13 @@ package body Maps_Tests is
       use Ada.Containers; -- for Count_Type, Hash_Type, Capacity_Error
 
       subtype Key_Type is Positive;
+      subtype Ch is Character;
 
       function Hash (Key : Key_Type) return Hash_Type is (Hash_Type (Key));
 
       package Maps_For_Test is new Minimal_Containers.Bounded_Hashed_Maps
         (Key_Type     => Key_Type,
-         Element_Type => Integer,
+         Element_Type => Ch,
          Hash         => Hash);
       use Maps_For_Test;
 
@@ -36,7 +37,7 @@ package body Maps_Tests is
       is
          M : Map (Capacity => 5, Modulus => 42);
       begin
-         Assert (Length (M) = 0, "new vector has non-zero length");
+         Assert (Length (M) = 0, "new map has non-zero length");
       end Initial;
 
       procedure Add_5 (Unused : in out AUnit.Test_Cases.Test_Case'Class)
@@ -44,8 +45,8 @@ package body Maps_Tests is
          M : Map (Capacity => 5, Modulus => 42);
       begin
          for J in 1 .. 5 loop
-            Insert (M, J, -J);
-            Assert (Length (M) = Count_Type (J), "vector has wrong length");
+            Insert (M, J, Ch'Val (J));
+            Assert (Length (M) = Count_Type (J), "map has wrong length");
          end loop;
       end Add_5;
 
@@ -54,8 +55,8 @@ package body Maps_Tests is
          M : Map (Capacity => 4, Modulus => 42);
       begin
          for J in 1 .. 5 loop
-            Insert (M, J, -J);
-            Assert (Length (M) = Count_Type (J), "vector has wrong length");
+            Insert (M, J, Ch'Val (J));
+            Assert (Length (M) = Count_Type (J), "map has wrong length");
          end loop;
          Assert (False, "should have raised Capacity_Error");
       exception
@@ -67,24 +68,27 @@ package body Maps_Tests is
          M : Map (Capacity => 5, Modulus => 42);
       begin
          for J in 1 .. 5 loop
-            Insert (M, J, -J);
-            Assert (Length (M) = Count_Type (J), "vector has wrong length");
-            Assert (Element (M, J) = -J, "element has wrong value (a)");
+            Insert (M, J, Ch'Val (J));
+            Assert (Length (M) = Count_Type (J), "map has wrong length");
+            Assert (Element (M, J) = Ch'Val (J),
+                    "element has wrong value (a)");
          end loop;
          declare
             Count : Positive := 1;
          begin
-            for J in M loop
-               Assert (Element (M, J) = -Count, "element has wrong value (b)");
+            for C in M.Iterate loop
+               Assert (Element (M, C) = Ch'Val (Count),
+                       "element has wrong value (b)");
                Count := Count + 1;
             end loop;
          end;
          declare
-            J : Integer := 0;
+            Count : Integer := 1;
          begin
             for Value of M loop
-               J := J + 1;
-               pragma Assert (Value = -J, "element has wrong value (c)");
+               pragma Assert (Value = Ch'Val (Count),
+                              "element has wrong value (c)");
+               Count := Count + 1;
             end loop;
          end;
       end Values;
@@ -94,7 +98,7 @@ package body Maps_Tests is
          M : Map (Capacity => 5, Modulus => 42);
       begin
          for J in 1 .. 5 loop
-            Insert (M, J, -J);
+            Insert (M, J, Ch'Val (J));
          end loop;
          declare
             Count : Positive := 1;
@@ -112,10 +116,10 @@ package body Maps_Tests is
          M : Map (Capacity => 5, Modulus => 42);
       begin
          for J in 1 .. 4 loop
-            Insert (M, J, -J);
+            Insert (M, J, Ch'Val (J));
          end loop;
          declare
-            Unused : Integer := 0;
+            Unused : Ch;
          begin
             Unused := Element (M, 5);
             Assert (False, "should have raised Constraint_Error");

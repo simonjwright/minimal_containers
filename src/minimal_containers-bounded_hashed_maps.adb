@@ -3,6 +3,25 @@ package body Minimal_Containers.Bounded_Hashed_Maps is
    procedure Check_Cursor_Validity (For_The_Container : Map;
                                     The_Cursor : Cursor);
 
+   function Has_Element (Position : Cursor) return Boolean
+   is
+   begin
+      return (if Position = No_Element
+              then False
+              else Position.Node in 1 .. Length (Position.Container.all));
+   end Has_Element;
+
+   function Iterate (Container : Map)
+                    return Map_Iterator_Interfaces.Forward_Iterator'Class
+   is
+   begin
+      return It : constant Iterator
+        := (Container => Container'Unrestricted_Access)
+      do
+         null;
+      end return;
+   end Iterate;
+
    function Length (Container : Map) return Count_Type
      is (Length (Container.Keys));
 
@@ -22,18 +41,6 @@ package body Minimal_Containers.Bounded_Hashed_Maps is
       Check_Cursor_Validity (Container, Position);
       return Element (Container.Elements, Positive (Position.Node));
    end Element;
-
-   procedure Insert
-     (Container : in out Map;
-      Key       :        Key_Type;
-      New_Item  :        Element_Type;
-      Position  :    out Cursor;
-      Inserted  :    out Boolean)
-   is
-   begin
-      pragma Compile_Time_Warning (Standard.True, "Insert unimplemented");
-      raise Program_Error with "Unimplemented procedure Insert";
-   end Insert;
 
    procedure Insert
      (Container : in out Map; Key : Key_Type; New_Item : Element_Type)
@@ -72,7 +79,7 @@ package body Minimal_Containers.Bounded_Hashed_Maps is
    end Delete;
 
    function First (Container : Map) return Cursor
-     is (Cursor'(Container  => Container'Address,
+     is (Cursor'(Container  => Container'Unrestricted_Access,
                  Generation => Container.Generation,
                  Node       => 1));
 
@@ -81,7 +88,7 @@ package body Minimal_Containers.Bounded_Hashed_Maps is
    begin
       Check_Cursor_Validity (Container, Position);
       return (if Position.Node in 1 .. Length (Container)
-              then Cursor'(Container  => Container'Address,
+              then Cursor'(Container  => Container'Unrestricted_Access,
                            Generation => Container.Generation,
                            Node       => Count_Type'Succ (Position.Node))
               else No_Element);
@@ -91,7 +98,7 @@ package body Minimal_Containers.Bounded_Hashed_Maps is
    begin
       for J in Container.Keys loop
          if Element (Container.Keys, J) = Key then
-            return Cursor'(Container  => Container'Address,
+            return Cursor'(Container  => Container'Unrestricted_Access,
                            Generation => Container.Generation,
                            Node       => Count_Type (J));
          end if;
@@ -109,21 +116,29 @@ package body Minimal_Containers.Bounded_Hashed_Maps is
                       Key       : Key_Type) return Boolean
    is (Find (Container, Key) /= No_Element);
 
-   function Has_Element (Container : Map; Position : Cursor) return Boolean
+   overriding function First (Object : Iterator) return Cursor
+   is (First (Object.Container.all));
+
+   overriding function Next (Object : Iterator; Position : Cursor)
+                            return Cursor
    is
    begin
-      Check_Cursor_Validity (Container, Position);
-      return Position.Node in 1 .. Length (Container);
-   end Has_Element;
+      if Position = No_Element then
+         return No_Element;
+      elsif Position.Container /= Object.Container then
+         raise Program_Error with "Position designates the wrong Map";
+      else
+         return Next (Position.Container.all, Position);
+      end if;
+   end Next;
 
    --  Body subprogram implementations
 
    procedure Check_Cursor_Validity (For_The_Container : Map;
                                     The_Cursor : Cursor)
    is
-      use type System.Address;
    begin
-      if The_Cursor.Container /= For_The_Container'Address then
+      if The_Cursor.Container /= For_The_Container'Unrestricted_Access then
          raise Constraint_Error with "cursor for different/no map";
       end if;
       if The_Cursor.Generation /= For_The_Container.Generation then

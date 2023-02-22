@@ -1,6 +1,7 @@
 with Ada.Containers;
+with Ada.Iterator_Interfaces;
+
 private with Minimal_Containers.Bounded_Vectors;
-private with System;
 
 generic
    type Key_Type is private;
@@ -17,17 +18,24 @@ is
    use Ada.Containers;
 
    type Map (Capacity : Count_Type;
-             Modulus : Ada.Containers.Hash_Type) is private
+             Modulus  : Ada.Containers.Hash_Type) is tagged private
    with
      Default_Initial_Condition => Is_Empty (Map),
-     Iterable => (First       => First,
-                  Next        => Next,
-                  Has_Element => Has_Element,
-                  Element     => Key);
+     Default_Iterator          => Iterate,
+     Iterator_Element          => Element_Type,
+     Constant_Indexing         => Element;
 
    Empty_Map : constant Map;
 
    type Cursor is private;
+
+   function Has_Element (Position : Cursor) return Boolean;
+
+   package Map_Iterator_Interfaces
+   is new Ada.Iterator_Interfaces (Cursor, Has_Element);
+
+   function Iterate (Container : Map)
+                    return Map_Iterator_Interfaces.Forward_Iterator'Class;
 
    No_Element : constant Cursor;
 
@@ -35,22 +43,15 @@ is
 
    function Length (Container : Map) return Count_Type
    with
-     Post   => Length'Result <= Container.Capacity;
+     Post => Length'Result in 0 .. Container.Capacity;
 
    function Is_Empty (Container : Map) return Boolean;
 
    function Key (Container : Map; Position : Cursor) return Key_Type
-     with Pre => Has_Element (Container, Position);
+     with Pre => Has_Element (Position);
 
    function Element (Container : Map; Position  : Cursor) return Element_Type
-     with Pre => Has_Element (Container, Position);
-
-   procedure Insert
-     (Container : in out Map;
-      Key       : Key_Type;
-      New_Item  : Element_Type;
-      Position  : out Cursor;
-      Inserted  : out Boolean);
+     with Pre => Has_Element (Position);
 
    procedure Insert
      (Container : in out Map;
@@ -74,8 +75,6 @@ is
    function Contains (Container : Map;
                       Key       : Key_Type) return Boolean;
 
-   function Has_Element (Container : Map; Position : Cursor) return Boolean;
-
 private
 
    --  This Map behaves as though the Hash function always returns 0,
@@ -93,26 +92,38 @@ private
 
    type Map
      (Capacity : Count_Type;
-      Modulus : Ada.Containers.Hash_Type) is record
+      Modulus : Ada.Containers.Hash_Type) is tagged record
          Generation : Generation_Type := 0;
          Keys       : Key_Vectors.Vector (Capacity => Capacity);
          Elements   : Element_Vectors.Vector (Capacity => Capacity);
       end record
    with Predicate => Length (Elements) = Length (Keys);
 
-   Empty_Map : constant Map := (Capacity => 0, Modulus => 0, others => <>);
+   type Map_Access is access constant Map with Storage_Size => 0;
 
    type Cursor is record
-      Container  : System.Address  := System.Null_Address;
+      Container  : Map_Access;
       Generation : Generation_Type := 0;
       Node       : Count_Type      := Count_Type'First;
    end record;
 
-   No_Element : constant Cursor := (Container  => System.Null_Address,
+   Empty_Map : constant Map := (Capacity => 0, Modulus => 0, others => <>);
+
+   No_Element : constant Cursor := (Container  => null,
                                     Generation => 0,
                                     Node       => 0);
 
    function Capacity (Container : Map) return Count_Type
      is (Container.Capacity);
+
+   type Iterator is new Map_Iterator_Interfaces.Forward_Iterator
+      with record
+         Container : Map_Access;
+      end record;
+
+   overriding function First (Object : Iterator) return Cursor;
+
+   overriding function Next (Object : Iterator; Position : Cursor)
+                            return Cursor;
 
 end Minimal_Containers.Bounded_Hashed_Maps;
