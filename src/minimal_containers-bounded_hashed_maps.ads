@@ -8,9 +8,7 @@ generic
    type Element_Type is private;
 
    with function Hash (Key : Key_Type) return Ada.Containers.Hash_Type;
-   with function Equivalent_Keys
-     (Left  : Key_Type;
-      Right : Key_Type) return Boolean is "=";
+   with function Equivalent_Keys (Left, Right : Key_Type) return Boolean;
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 package Minimal_Containers.Bounded_Hashed_Maps
 is
@@ -23,19 +21,19 @@ is
      Default_Initial_Condition => Is_Empty (Map),
      Default_Iterator          => Iterate,
      Iterator_Element          => Element_Type,
-     Constant_Indexing         => Element;
-
-   Empty_Map : constant Map;
+     Constant_Indexing         => Element_For_Iteration; -- see Ada Gem 128
 
    type Cursor is private;
 
+   Empty_Map : constant Map;
+
    function Has_Element (Position : Cursor) return Boolean;
+
+   function Element_For_Iteration (Container : Map;
+                                   Position  : Cursor) return Element_Type;
 
    package Map_Iterator_Interfaces
    is new Ada.Iterator_Interfaces (Cursor, Has_Element);
-
-   function Iterate (Container : Map)
-                    return Map_Iterator_Interfaces.Forward_Iterator'Class;
 
    No_Element : constant Cursor;
 
@@ -47,10 +45,10 @@ is
 
    function Is_Empty (Container : Map) return Boolean;
 
-   function Key (Container : Map; Position : Cursor) return Key_Type
+   function Key (Position : Cursor) return Key_Type
      with Pre => Has_Element (Position);
 
-   function Element (Container : Map; Position  : Cursor) return Element_Type
+   function Element (Position  : Cursor) return Element_Type
      with Pre => Has_Element (Position);
 
    procedure Insert
@@ -58,23 +56,22 @@ is
       Key       : Key_Type;
       New_Item  : Element_Type);
 
-   procedure Delete (Container : in out Map;
-                     Key       :        Key_Type);
+   procedure Delete (Container : in out Map; Key : Key_Type);
 
-   procedure Delete (Container : in out Map;
-                     Position  : in out Cursor);
+   procedure Delete (Container : in out Map; Position  : in out Cursor);
 
    function First (Container : Map) return Cursor;
 
-   function Next (Container : Map; Position : Cursor) return Cursor;
+   function Next (Position : Cursor) return Cursor;
 
    function Find (Container : Map; Key : Key_Type) return Cursor;
 
+   function Contains (Container : Map; Key : Key_Type) return Boolean;
+
    function Element (Container : Map; Key : Key_Type) return Element_Type;
 
-   function Contains (Container : Map;
-                      Key       : Key_Type) return Boolean;
-
+   function Iterate (Container : Map)
+                    return Map_Iterator_Interfaces.Forward_Iterator'Class;
 private
 
    --  This Map behaves as though the Hash function always returns 0,

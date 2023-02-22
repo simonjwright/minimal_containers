@@ -1,7 +1,11 @@
 package body Minimal_Containers.Bounded_Hashed_Maps is
 
+   --  Body subprograms  --
+
    procedure Check_Cursor_Validity (For_The_Container : Map;
                                     The_Cursor : Cursor);
+
+   --  Spec subprograms  --
 
    function Has_Element (Position : Cursor) return Boolean
    is
@@ -11,16 +15,13 @@ package body Minimal_Containers.Bounded_Hashed_Maps is
               else Position.Node in 1 .. Length (Position.Container.all));
    end Has_Element;
 
-   function Iterate (Container : Map)
-                    return Map_Iterator_Interfaces.Forward_Iterator'Class
+   function Element_For_Iteration (Container : Map;
+                                   Position : Cursor) return Element_Type
    is
    begin
-      return It : constant Iterator
-        := (Container => Container'Unrestricted_Access)
-      do
-         null;
-      end return;
-   end Iterate;
+      Check_Cursor_Validity (Container, Position);
+      return Element (Container.Elements, Positive (Position.Node));
+   end Element_For_Iteration;
 
    function Length (Container : Map) return Count_Type
      is (Length (Container.Keys));
@@ -28,18 +29,22 @@ package body Minimal_Containers.Bounded_Hashed_Maps is
    function Is_Empty (Container : Map) return Boolean
      is (Length (Container.Keys) = 0);
 
-   function Key (Container : Map; Position : Cursor) return Key_Type
+   function Key (Position : Cursor) return Key_Type
    is
    begin
-      Check_Cursor_Validity (Container, Position);
-      return Element (Container.Keys, Positive (Position.Node));
+      if Position = No_Element then
+         raise Constraint_Error with "no key for cursor=No_Element)";
+      end if;
+      return Element (Position.Container.Keys, Positive (Position.Node));
    end Key;
 
-   function Element (Container : Map; Position : Cursor) return Element_Type
+   function Element (Position : Cursor) return Element_Type
    is
    begin
-      Check_Cursor_Validity (Container, Position);
-      return Element (Container.Elements, Positive (Position.Node));
+      if Position = No_Element then
+         raise Constraint_Error with "no element for cursor=No_Element";
+      end if;
+      return Element (Position.Container.Elements, Positive (Position.Node));
    end Element;
 
    procedure Insert
@@ -57,8 +62,7 @@ package body Minimal_Containers.Bounded_Hashed_Maps is
       Container.Generation := Container.Generation + 1;
    end Insert;
 
-   procedure Delete (Container : in out Map;
-                     Key       :        Key_Type)
+   procedure Delete (Container : in out Map; Key : Key_Type)
    is
       C : Cursor := Find (Container, Key);
    begin
@@ -68,11 +72,12 @@ package body Minimal_Containers.Bounded_Hashed_Maps is
       Delete (Container, C);
    end Delete;
 
-   procedure Delete (Container : in out Map;
-                     Position  : in out Cursor)
+   procedure Delete (Container : in out Map; Position  : in out Cursor)
    is
    begin
-      Check_Cursor_Validity (Container, Position);
+      if Position = No_Element then
+         raise Constraint_Error with "can't delete, cursor=No_Element";
+      end if;
       Delete (Container.Keys, Integer (Position.Node));
       Delete (Container.Elements, Integer (Position.Node));
       Container.Generation := Container.Generation + 1;
@@ -83,13 +88,15 @@ package body Minimal_Containers.Bounded_Hashed_Maps is
                  Generation => Container.Generation,
                  Node       => 1));
 
-   function Next (Container : Map; Position : Cursor) return Cursor
+   function Next (Position : Cursor) return Cursor
    is
    begin
-      Check_Cursor_Validity (Container, Position);
-      return (if Position.Node in 1 .. Length (Container)
-              then Cursor'(Container  => Container'Unrestricted_Access,
-                           Generation => Container.Generation,
+      if Position = No_Element then
+         return No_Element;
+      end if;
+      return (if Position.Node in 1 .. Length (Position.Container.all) - 1
+              then Cursor'(Container  => Position.Container,
+                           Generation => Position.Container.Generation,
                            Node       => Count_Type'Succ (Position.Node))
               else No_Element);
    end Next;
@@ -109,12 +116,26 @@ package body Minimal_Containers.Bounded_Hashed_Maps is
    function Element (Container : Map; Key : Key_Type) return Element_Type is
       C : constant Cursor := Find (Container, Key);
    begin
-      return Element (Container, C);
+      if C = No_Element then
+         raise Constraint_Error with "key not found in map";
+      end if;
+      return Element (C);
    end Element;
 
    function Contains (Container : Map;
                       Key       : Key_Type) return Boolean
    is (Find (Container, Key) /= No_Element);
+
+   function Iterate (Container : Map)
+                    return Map_Iterator_Interfaces.Forward_Iterator'Class
+   is
+   begin
+      return It : constant Iterator
+        := (Container => Container'Unrestricted_Access)
+      do
+         null;
+      end return;
+   end Iterate;
 
    overriding function First (Object : Iterator) return Cursor
    is (First (Object.Container.all));
@@ -128,7 +149,7 @@ package body Minimal_Containers.Bounded_Hashed_Maps is
       elsif Position.Container /= Object.Container then
          raise Program_Error with "Position designates the wrong Map";
       else
-         return Next (Position.Container.all, Position);
+         return Next (Position);
       end if;
    end Next;
 

@@ -30,7 +30,8 @@ package body Maps_Tests is
       package Maps_For_Test is new Minimal_Containers.Bounded_Hashed_Maps
         (Key_Type     => Key_Type,
          Element_Type => Ch,
-         Hash         => Hash);
+         Hash         => Hash,
+         Equivalent_Keys => "=");
       use Maps_For_Test;
 
       procedure Initial (Unused : in out AUnit.Test_Cases.Test_Case'Class)
@@ -73,20 +74,22 @@ package body Maps_Tests is
             Assert (Element (M, J) = Ch'Val (J),
                     "element has wrong value (a)");
          end loop;
+         --  for .. in
          declare
             Count : Positive := 1;
          begin
             for C in M.Iterate loop
-               Assert (Element (M, C) = Ch'Val (Count),
+               Assert (Element (C) = Ch'Val (Count),
                        "element has wrong value (b)");
                Count := Count + 1;
             end loop;
          end;
+         --  for .. of
          declare
             Count : Integer := 1;
          begin
-            for Value of M loop
-               pragma Assert (Value = Ch'Val (Count),
+            for C of M loop
+               pragma Assert (C = Ch'Val (Count),
                               "element has wrong value (c)");
                Count := Count + 1;
             end loop;
