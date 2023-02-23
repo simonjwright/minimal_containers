@@ -1,8 +1,10 @@
 with Ada.Containers;
+with Ada.Iterator_Interfaces;
 
 generic
    type Index_Type is range <>;
    type Element_Type is private;
+
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 package Minimal_Containers.Bounded_Vectors
 is
@@ -18,25 +20,34 @@ is
    subtype Capacity_Range
      is Count_Type range 0 .. Index_Type'Pos (Index_Type'Last);
 
-   type Vector (Capacity : Capacity_Range) is private
+   type Vector (Capacity : Capacity_Range) is tagged private
    with
      Default_Initial_Condition => Is_Empty (Vector),
-     Iterable => (First       => Iter_First,
-                  Has_Element => Iter_Has_Element,
-                  Next        => Iter_Next,
-                  Element     => Iter_Element);
-   --  The 4-argument Iterable gives us for .. in and for .. of.
+     Default_Iterator          => Iterate,
+     Iterator_Element          => Element_Type,
+     Constant_Indexing         => Element_For_Iteration; -- see Ada Gem 128
 
-   function Empty_Vector return Vector;
+   type Cursor is private;
 
-   function Capacity (Container : Vector) return Capacity_Range;
+   Empty_Vector : constant Vector;
 
-   function Length (Container : Vector) return Capacity_Range;
+   No_Element : constant Cursor;
+
+   function Has_Element (Position : Cursor) return Boolean;
+
+   package Vector_Iterator_Interfaces is new
+      Ada.Iterator_Interfaces (Cursor, Has_Element);
+
+   function Capacity (Container : Vector) return Count_Type;
+
+   function Length (Container : Vector) return Count_Type;
 
    function Is_Empty (Container : Vector) return Boolean;
 
    function Element (Container : Vector;
                      Index : Index_Type) return Element_Type;
+
+   function Element (Position : Cursor) return Element_Type;
 
    procedure Append (Container : in out Vector; New_Item : Element_Type)
    with
@@ -44,103 +55,104 @@ is
      Post => Length (Container) = Length (Container'Old) + 1;
 
    procedure Delete (Container : in out Vector;
-                     Index     :        Extended_Index)
+                     Index     : Extended_Index)
    with
-     Pre  => Index in First_Index (Container) .. Last_Index (Container),
+     Pre  => Index in Index_Type'First .. Last_Index (Container),
+     Post => Length (Container) = Length (Container)'Old - 1;
+
+   procedure Delete (Container : in out Vector;
+                     Position  : in out Cursor)
+   with
+     Pre  => Position /= No_Element,
+     Post => Length (Container) = Length (Container)'Old - 1;
+
+   procedure Delete_First (Container : in out Vector)
+   with
+     Post => Length (Container) = Length (Container)'Old - 1;
+
+   procedure Delete_Last (Container : in out Vector)
+   with
      Post => Length (Container) = Length (Container)'Old - 1;
 
    function First_Index (Container : Vector) return Index_Type
    with
      Post => First_Index'Result = Index_Type'First;
 
+   function First (Container : Vector) return Cursor;
+
+   function First_Element (Container : Vector) return Element_Type
+   with
+     Pre => not Is_Empty (Container);
+
    function Last_Index (Container : Vector) return Extended_Index
    with
      Post => Count_Type (Last_Index'Result - Index_Type'First + 1)
              = Length (Container);
+
+   function Last (Container : Vector) return Cursor;
+
+   function Last_Element (Container : Vector) return Element_Type;
+
+   function Next (Position : Cursor) return Cursor;
+
+   function Previous (Position : Cursor) return Cursor;
 
    function Find_Index (Container : Vector;
                         Item      : Element_Type;
                         Index     : Index_Type := Index_Type'First)
                        return Extended_Index;
 
-   function Iter_First (Container : Vector) return Extended_Index;
+   --  For iteration  --
 
-   function Iter_Has_Element
-     (Container : Vector;
-      Position  : Extended_Index) return Boolean;
+   function Element_For_Iteration (Container : Vector;
+                                   Position  : Cursor) return Element_Type;
 
-   function Iter_Next
-     (Container : Vector;
-      Position  : Extended_Index) return Extended_Index;
-
-   function Iter_Element
-     (Container : Vector;
-      Position  : Extended_Index) return Element_Type;
+   function Iterate
+     (Container : Vector)
+      return Vector_Iterator_Interfaces.Reversible_Iterator'Class;
 
 private
 
    subtype Array_Index is Capacity_Range range 1 .. Capacity_Range'Last;
    type Elements_Array is array (Array_Index range <>) of aliased Element_Type;
-   overriding function "=" (L, R : Elements_Array) return Boolean is abstract;
-   --  I guess because not all the array elements will be valid.
 
-   type Vector (Capacity : Capacity_Range) is record
+   type Vector (Capacity : Capacity_Range) is tagged record
       Last     : Extended_Index := No_Index;
       Elements : Elements_Array (1 .. Capacity);
    end record;
 
-   function Empty_Vector return Vector is
-     ((Capacity => 0, others => <>));
+   type Vector_Access is access all Vector;
+   for Vector_Access'Storage_Size use 0;
 
-   function Length (Container : Vector) return Capacity_Range
-     is (Capacity_Range (Container.Last - Extended_Index'First));
+   type Cursor is record
+      Container : Vector_Access;
+      Index     : Index_Type := Index_Type'First;
+   end record;
 
-   function Capacity (Container : Vector) return Capacity_Range
-     is (Container.Capacity);
+   Empty_Vector : constant Vector := (Capacity => 0, others => <>);
 
-   function Is_Empty (Container : Vector) return Boolean
-     is (Length (Container) = 0);
+   No_Element : constant Cursor := Cursor'(null, Index_Type'First);
 
-   function Element (Container : Vector;
-                     Index : Index_Type) return Element_Type
-     is (if Index <= Container.Last
-         then Container.Elements
-           (Capacity_Range
-              (Index_Type'Pos (Index))
-              - Index_Type'Pos (Index_Type'First)
-              + 1)
-         else raise Constraint_Error with "invalid index in iterator");
+   type Iterator is new Vector_Iterator_Interfaces.Reversible_Iterator with
+      record
+         Container : Vector_Access;
+         Index     : Index_Type'Base;
+      end record;
 
-   function First_Index (Container : Vector) return Index_Type
-     is (Index_Type'First);
+   overriding function First (Object : Iterator) return Cursor;
 
-   function Last_Index (Container : Vector) return Extended_Index
-     is (Container.Last);
+   overriding function Last  (Object : Iterator) return Cursor;
 
-   function Iter_First (Container : Vector) return Extended_Index
-     is (Index_Type'First);
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
 
-   function Iter_Has_Element
-     (Container : Vector;
-      Position  : Extended_Index) return Boolean
-     is (Position in Index_Type'First .. Container.Last);
+   overriding function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
 
-   function Iter_Next
-     (Container : Vector;
-      Position  : Extended_Index) return Extended_Index
-     is (if Position in Index_Type'First .. Container.Last - 1
-         then Extended_Index'Succ (Position)
-         else No_Index);
+   --  Spec Implementations  --
 
-   function Iter_Element
-     (Container : Vector;
-      Position  : Extended_Index) return Element_Type
-     is (if Position in Index_Type'First .. Container.Last
-         then Container.Elements
-           (Capacity_Range
-              (Index_Type'Pos (Position))
-              - Index_Type'Pos (Index_Type'First)
-              + 1)
-         else raise Program_Error with "invalid index in iterator");
+   --  none
 
 end Minimal_Containers.Bounded_Vectors;

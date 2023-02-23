@@ -13,8 +13,8 @@ is
       for I of V loop
          Put_Line (I'Image);
       end loop;
-      for J in V loop
-         Put_Line (J'Image & " =>" & Element (V, J)'Image);
+      for J in V.Iterate loop
+         Put_Line (J'Image & " =>" & Element (J)'Image);
       end loop;
       Put_Line ("--------");
       New_Line;

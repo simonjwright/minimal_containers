@@ -102,13 +102,15 @@ package body Minimal_Containers.Bounded_Hashed_Maps is
    end Next;
 
    function Find (Container : Map; Key : Key_Type) return Cursor is
+      Node : Count_Type := 1;
    begin
-      for J in Container.Keys loop
-         if Element (Container.Keys, J) = Key then
+      for J in Container.Keys.Iterate loop
+         if Key_Vectors.Element (J) = Key then
             return Cursor'(Container  => Container'Unrestricted_Access,
                            Generation => Container.Generation,
-                           Node       => Count_Type (J));
+                           Node       => Node);
          end if;
+         Node := Node + 1;
       end loop;
       return No_Element;
    end Find;

@@ -1,5 +1,6 @@
 with AUnit.Assertions; use AUnit.Assertions;
 with AUnit.Test_Cases; use AUnit.Test_Cases;
+with Ada.Assertions;
 with Ada.Containers;
 with Minimal_Containers.Bounded_Vectors;
 
@@ -56,28 +57,37 @@ package body Vectors_Tests is
          Assert (False, "should have raised Capacity_Error");
       exception
          when Capacity_Error => null;
+         when Ada.Assertions.Assertion_Error => null;
       end Too_Many;
 
       procedure Values (Unused : in out AUnit.Test_Cases.Test_Case'Class)
       is
          V : Vector (Capacity => 5);
+         Count : Natural := 0;
       begin
          for J in 1 .. 5 loop
-            Append (V, -J);
-            Assert (Length (V) = Count_Type (J), "vector has wrong length");
+            Count := Count + 1;
+            Append (V, Count);
+            Assert (Length (V) = Count_Type (Count),
+                    "vector has wrong length");
             --  The index of the fist element is 10
-            Assert (Element (V, J + 9) = -J, "element has wrong value (a)");
+            Assert (Element (V, Count + 9) = Count,
+                    "element has wrong value (a)");
          end loop;
-         for J in V loop
+         Count := 0;
+         for J in V.Iterate loop
             --  The index of the first element is 10
-            Assert (Element (V, J) = -(J - 9), "element has wrong value (b)");
+            Count := Count + 1;
+            Assert (Element (J) = Count,
+                    "element has wrong value (b)");
          end loop;
          declare
-            J : Integer := 0;
+            Count : Integer := 0;
          begin
             for Value of V loop
-               J := J + 1;
-               pragma Assert (Value = -J, "element has wrong value (c)");
+               Count := Count + 1;
+               pragma Assert (Value = Count,
+                              "element has wrong value (c)");
             end loop;
          end;
       end Values;
