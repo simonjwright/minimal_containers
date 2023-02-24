@@ -22,11 +22,28 @@ package body Vectors_Tests is
 
       use Ada.Containers; -- for Count_Type, Capacity_Error
 
-      subtype Index_Type is Integer range 10 .. 14;
+      type Index_Base is range 0 .. 6;
+      subtype Index_Type is Index_Base range 1 .. 5;
+
+      type Element_Type is (K, L, M, N, P);
+
+      Expected_Values : constant array (Index_Type) of Element_Type
+        := (1 => K,
+            2 => L,
+            3 => M,
+            4 => N,
+            5 => P);
+
+      Index_For : constant array (Element_Type) of Index_Type
+        := (K => 1,
+            L => 2,
+            M => 3,
+            N => 4,
+            P => 5);
 
       package Vectors_For_Test is new Minimal_Containers.Bounded_Vectors
         (Index_Type   => Index_Type,
-         Element_Type => Integer);
+         Element_Type => Element_Type);
       use Vectors_For_Test;
 
       procedure Initial (Unused : in out AUnit.Test_Cases.Test_Case'Class)
@@ -40,19 +57,20 @@ package body Vectors_Tests is
       is
          V : Vector (Capacity => 5);
       begin
-         for J in 1 .. 5 loop
+         for J in Element_Type loop
             Append (V, J);
-            Assert (Length (V) = Count_Type (J), "vector has wrong length");
          end loop;
+         Assert (Length (V) = Capacity (V), "vector has wrong length");
       end Add_5;
 
       procedure Too_Many (Unused : in out AUnit.Test_Cases.Test_Case'Class)
       is
          V : Vector (Capacity => 4);
       begin
-         for J in 1 .. 5 loop
+         for J in Element_Type loop
             Append (V, J);
-            Assert (Length (V) = Count_Type (J), "vector has wrong length");
+            Assert (Length (V) = Element_Type'Pos (J) + 1,
+                    "vector has wrong length");
          end loop;
          Assert (False, "should have raised Capacity_Error");
       exception
@@ -63,31 +81,31 @@ package body Vectors_Tests is
       procedure Values (Unused : in out AUnit.Test_Cases.Test_Case'Class)
       is
          V : Vector (Capacity => 5);
-         Count : Natural := 0;
+         Count : Natural;
       begin
-         for J in 1 .. 5 loop
-            Count := Count + 1;
-            Append (V, Count);
-            Assert (Length (V) = Count_Type (Count),
+         Count := 0;
+         for J in Index_Type loop
+            Append (V, Element_Type'Val (Count));
+            Assert (Length (V) = Count_Type (Count + 1),
                     "vector has wrong length");
-            --  The index of the fist element is 10
-            Assert (Element (V, Count + 9) = Count,
+            Assert (Element (V, Index_Type (Count + 1))
+                      = Element_Type'Val (Count),
                     "element has wrong value (a)");
+            Count := Count + 1;
          end loop;
          Count := 0;
          for J in V.Iterate loop
-            --  The index of the first element is 10
-            Count := Count + 1;
-            Assert (Element (J) = Count,
+            Assert (Element (Position => J) = Element_Type'Val (Count),
                     "element has wrong value (b)");
+            Count := Count + 1;
          end loop;
          declare
             Count : Integer := 0;
          begin
             for Value of V loop
+               Assert (Value = Element_Type'Val (Count),
+                       "element has wrong value (c)");
                Count := Count + 1;
-               pragma Assert (Value = Count,
-                              "element has wrong value (c)");
             end loop;
          end;
       end Values;
@@ -97,17 +115,18 @@ package body Vectors_Tests is
       is
          V : Vector (Capacity => 5);
       begin
-         for J in 1 .. 5 loop
-            Append (V, -J);
-            Assert (Length (V) = Count_Type (J), "vector has wrong length");
-            --  The index of the fist element is 10
-            Assert (Element (V, J + 9) = -J, "element has wrong value (a)");
+         for J in Index_Type range 1 .. 4 loop
+            Append (V, Expected_Values (J));
+            Assert (Length (V) = Index_Type'Pos (J),
+                    "vector has wrong length");
+            Assert (Element (V, J) = Expected_Values (J),
+                    "element has wrong value (a)");
          end loop;
-         for J in 1 .. 5 loop
-            Assert (Find_Index (V, -J) = J + 9,
+         for J in Element_Type range L .. N loop
+            Assert (Find_Index (V, J) = Index_For (J),
                     "find_index found wrong index");
          end loop;
-         Assert (Find_Index (V, -6) = No_Index,
+         Assert (Find_Index (V, P) = No_Index,
                  "find_index succeeded for missing element");
       end Finding_Index;
 
@@ -115,15 +134,13 @@ package body Vectors_Tests is
       is
          V : Vector (Capacity => 5);
       begin
-         --  add indices 10 .. 13
-         for J in 1 .. 4 loop
-            Append (V, -J);
+         for J in Element_Type range K .. N loop
+            Append (V, J);
          end loop;
-         --  try to access index 14
          declare
-            Unused : Integer := 0;
+            Unused : Element_Type;
          begin
-            Unused := Element (V, 14);
+            Unused := Element (V, 5);
             Assert (False, "should have raised Constraint_Error");
          exception
             when Constraint_Error => null;
