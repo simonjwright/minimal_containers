@@ -147,6 +147,29 @@ package body Vectors_Tests is
          end;
       end Out_Of_Range;
 
+      procedure Tampering (Unused : in out AUnit.Test_Cases.Test_Case'Class)
+      is
+         V : Vector (Capacity => 5);
+      begin
+         for J in Element_Type range K .. P loop
+            Append (V, J);
+         end loop;
+         --  NB this has to be reverse, or we'll miss the element that
+         --  was next after the deleted one.
+         for Cursor in reverse V.Iterate loop
+            if Element (Cursor) = M then
+               declare
+                  Cursor_Copy : Vectors_For_Test.Cursor := Cursor;
+               begin
+                  V.Delete (Cursor_Copy);
+               end;
+            end if;
+         end loop;
+         Assert (V.Length = 4, "wrong length");
+         Assert (V.Element (2) = L, "wrong element (2)");
+         Assert (V.Element (3) = N, "wrong element (3)");
+      end Tampering;
+
       --  XXX more to come!
 
       overriding procedure Register_Tests (C : in out T)
@@ -164,6 +187,8 @@ package body Vectors_Tests is
            (C, Finding_Index'Access, "find_index");
          Registration.Register_Routine
            (C, Out_Of_Range'Access, "out-of-range access");
+         Registration.Register_Routine
+           (C, Tampering'Access, "tampering - no effect");
       end Register_Tests;
 
    end Tests;

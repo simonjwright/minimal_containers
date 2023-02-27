@@ -8,9 +8,7 @@ These containers are still tagged, because (without compiler extensions) ColdFra
 
 The containers provided are `Bounded_Hashed_Maps` and `Bounded_Vectors` (the ones required by ColdFrame in the Ravenscar version). Both support forward and reverse generalised read-only iteration.
 
-At present (version 0.1.1-dev) the Maps have a simple version of checking for tampering with cursors, based on a generation number which is incremented when elements are added or removed. This isn't suppressible by `pragma Suppress (Container_Checks)` or `Tampering_Check` - to be reviewed.
-
-Those checks aren't (yet?) implemented in Vectors.
+At present (version 0.1.2-dev), neither container checks for tampering; deleting an element during iteration works fine so long as it's a _reverse_ iteration.
 
 Minimal\_Containers are compatible with Alire.
 
