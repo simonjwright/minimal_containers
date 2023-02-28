@@ -90,10 +90,12 @@ is
 
    procedure Delete_First (Container : in out Vector)
    with
+     Pre => not Is_Empty (Container),
      Post => Length (Container) = Length (Container)'Old - 1;
 
    procedure Delete_Last (Container : in out Vector)
    with
+     Pre => not Is_Empty (Container),
      Post => Length (Container) = Length (Container)'Old - 1;
 
    function First_Index (Container : Vector) return Index_Type
@@ -106,10 +108,7 @@ is
    with
      Pre => not Is_Empty (Container);
 
-   function Last_Index (Container : Vector) return Extended_Index
-   with
-     Post => Count_Type (Last_Index'Result - Index_Type'First + 1)
-             = Length (Container);
+   function Last_Index (Container : Vector) return Extended_Index;
 
    function Last (Container : Vector) return Cursor;
 
