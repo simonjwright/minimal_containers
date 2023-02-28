@@ -25,7 +25,7 @@ package body Minimal_Containers.Bounded_Hashed_Maps is
    --  Body subprograms  --
 
    procedure Check_Cursor_Validity (For_The_Container : Map;
-                                    The_Cursor : Cursor);
+                                    The_Cursor        : Cursor);
 
    --  Spec subprograms  --
 
@@ -38,7 +38,7 @@ package body Minimal_Containers.Bounded_Hashed_Maps is
    end Has_Element;
 
    function Element_For_Iteration (Container : Map;
-                                   Position : Cursor) return Element_Type
+                                   Position  : Cursor) return Element_Type
    is
    begin
       Check_Cursor_Validity (Container, Position);
@@ -81,6 +81,7 @@ package body Minimal_Containers.Bounded_Hashed_Maps is
       end if;
       Append (Container.Keys, Key);
       Append (Container.Elements, New_Item);
+      Container.Generation := Container.Generation + 1;
    end Insert;
 
    procedure Delete (Container : in out Map; Key : Key_Type)
@@ -101,11 +102,13 @@ package body Minimal_Containers.Bounded_Hashed_Maps is
       end if;
       Delete (Container.Keys, Integer (Position.Index));
       Delete (Container.Elements, Integer (Position.Index));
+      Container.Generation := Container.Generation + 1;
    end Delete;
 
    function First (Container : Map) return Cursor
-     is (Cursor'(Container => Container'Unrestricted_Access,
-                 Index     => 1));
+     is (Cursor'(Container  => Container'Unrestricted_Access,
+                 Generation => Container.Generation,
+                 Index      => 1));
 
    function Next (Position : Cursor) return Cursor
    is
@@ -114,8 +117,9 @@ package body Minimal_Containers.Bounded_Hashed_Maps is
          return No_Element;
       end if;
       return (if Position.Index in 1 .. Length (Position.Container.all) - 1
-              then Cursor'(Container => Position.Container,
-                           Index     => Count_Type'Succ (Position.Index))
+              then Cursor'(Container  => Position.Container,
+                           Generation => Position.Generation,
+                           Index      => Count_Type'Succ (Position.Index))
               else No_Element);
    end Next;
 
@@ -124,8 +128,9 @@ package body Minimal_Containers.Bounded_Hashed_Maps is
    begin
       for J in Container.Keys.Iterate loop
          if Key_Vectors.Element (J) = Key then
-            return Cursor'(Container => Container'Unrestricted_Access,
-                           Index     => Index);
+            return Cursor'(Container  => Container'Unrestricted_Access,
+                           Generation => Container.Generation,
+                           Index      => Index);
          end if;
          Index := Index + 1;
       end loop;
@@ -167,6 +172,8 @@ package body Minimal_Containers.Bounded_Hashed_Maps is
          return No_Element;
       elsif Position.Container /= Object.Container then
          raise Program_Error with "Position designates the wrong Map";
+      elsif Position.Generation /= Object.Container.Generation then
+         raise Program_Error with "The Map has been tampered with";
       else
          return Next (Position);
       end if;
@@ -180,6 +187,9 @@ package body Minimal_Containers.Bounded_Hashed_Maps is
    begin
       if The_Cursor.Container /= For_The_Container'Unrestricted_Access then
          raise Constraint_Error with "cursor for different/no map";
+      end if;
+      if The_Cursor.Generation /= For_The_Container.Generation then
+         raise Program_Error with "map has been tampered with";
       end if;
    end Check_Cursor_Validity;
 

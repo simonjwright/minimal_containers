@@ -8,9 +8,26 @@ These containers are still tagged, because (without compiler extensions) ColdFra
 
 The containers provided are `Bounded_Hashed_Maps` and `Bounded_Vectors` (the ones required by ColdFrame in the Ravenscar version). Both support forward and reverse generalised read-only iteration.
 
-At present (version 0.1.2-dev), neither container checks for tampering; deleting an element during iteration works fine so long as it's a _reverse_ iteration.
-
 Minimal\_Containers are compatible with Alire.
+
+## Tampering checks ##
+
+In their unchecked form, both containers would misbehave if an element was deleted during a forward iteration over the container, in that the "next" element would be skipped.
+
+This would be undesirable for Maps, so a generation check has been introduced, raising `Program_Error` if this is detected.
+
+Unlike Maps, Vectors support both forward and reverse iteration; if it's necessary to delete some elements from a Vector, e.g. those that have become invalid, do it in a reverse loop,
+```
+for Cursor in reverse Vector.Iterate loop
+   if Is_Invalid (Element (Cursor)) then
+      declare
+         Cursor_Copy : Vectors.Cursor := Cursor;
+      begin
+         Vector.Delete (Cursor_Copy);
+      end;
+   end if;
+end loop;
+```
 
 ## Experimental results ##
 
@@ -19,6 +36,7 @@ Minimal\_Containers are compatible with Alire.
 The "standard" containers are those provided as part of [Cortex GNAT RTS](https://github.com/simonjwright/cortex-gnat-rts); the "minimal" containers are these.
 
 The builds used GCC 13.0.1 (20230129).
+Using the "minimal" containers resulted in a reduction of 29% (40788 bytes) in the `text` size.
 
 | Containers | text | data | bss |
 | :--------- | ---: | ---: | --: |
@@ -27,11 +45,24 @@ The builds used GCC 13.0.1 (20230129).
 
 ### [STM32F4](https://github.com/simonjwright/coldframe/tree/master/examples/stm32f4) ###
 
+#### With gnat\_arm\_elf ####
+
 The "embedded" containers are those provided in [Alire](https://alire.ada.dev/docs/#introduction) by the `gnat_arm_elf 2.2.1` compiler as `embedded-stm32f4`.
 
-The builds used the `gnat_arm_elf 2.2.1` compiler (there were compiler issues both with GCC 13.0.1 and [GCC 12.2.0](https://github.com/simonjwright/distributing-gcc/releases/tag/gcc-12.2.0-arm-eabi)).
+The  builds used the `gnat_arm_elf 2.2.1` compiler, with binder switches `-minimal`, `-d512` (default primary stack size), `-D128` (default secondary stack size) and `-Q0` (meant to say don't generate any secondary stacks, though I don't see how they'd be used, but in fact appears to generate one).
+Using the "minimal" containers resulted in a reduction of 27% (83764 bytes) in the `text` size.
 
 | Containers | text | data | bss |
 | :--------- | ---: | ---: | --: |
 | embedded | 305408 | 4244 | 32384 |
-| minimal | 221612 | 4124 | 32408 |
+| minimal | 221644 | 4124 | 32408 |
+
+#### With Cortex GNAT RTS ####
+
+The builds used GCC 13.0.1 (20230129), with binder switch `-minimal`. The "standard" containers are those from Cortex GNAT RTS, based on the GCC 4.9.1 version.
+Using the "minimal" containers resulted in a reduction of 22% (37156 bytes) in the `text` size.
+
+| Containers | text | data | bss |
+| :--------- | ---: | ---: | --: |
+| standard | 166956 | 1352 | 3768 |
+| minimal | 129800 | 1432 | 3800 |

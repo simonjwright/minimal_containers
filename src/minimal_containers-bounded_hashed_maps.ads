@@ -107,9 +107,12 @@ private
      (Index_Type => Positive, Element_Type => Element_Type);
    use Element_Vectors;
 
+   type Generation_Type is mod 2**32; -- for tampering checks
+
    type Map
      (Capacity : Count_Type;
       Modulus : Ada.Containers.Hash_Type) is tagged record
+         Generation : Generation_Type := 0;
          Keys       : Key_Vectors.Vector (Capacity => Capacity);
          Elements   : Element_Vectors.Vector (Capacity => Capacity);
       end record
@@ -118,16 +121,18 @@ private
    type Map_Access is access constant Map with Storage_Size => 0;
 
    type Cursor is record
-      Container : Map_Access;
-      Index     : Count_Type := Count_Type'First;
+      Container  : Map_Access;
+      Generation : Generation_Type := 0;
+      Index      : Count_Type      := Count_Type'First;
    end record;
 
    Empty_Map : constant Map := (Capacity => 0,
-                                Modulus => 0,
-                                others => <>);
+                                Modulus  => 0,
+                                others   => <>);
 
-   No_Element : constant Cursor := (Container => null,
-                                    Index     => 0);
+   No_Element : constant Cursor := (Container  => null,
+                                    Generation => 0,
+                                    Index      => 0);
 
    function Capacity (Container : Map) return Count_Type
      is (Container.Capacity);

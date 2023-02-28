@@ -140,19 +140,21 @@ package body Maps_Tests is
          end loop;
          Assert (M.Element (1) = 'a', "wrong first element");
          Assert (M.Element (5) = 'e', "wrong last element");
-         for K in M.Iterate loop
-            if Element (K) = 'c' then
-               declare
-                  K_Copy : Maps_For_Test.Cursor := K;
-               begin
-                  M.Delete (K_Copy);
-               end;
-            end if;
-         end loop;
-         Assert (M.Length = 4, "wrong length");
-         Assert (M.Element (2) = 'b', "wrong element (2)");
-         Assert (not M.Contains (3), "contains (3)");
-         Assert (M.Element (4) = 'd', "wrong element (4)");
+         begin
+            for K in M.Iterate loop
+               if Element (K) = 'c' then
+                  declare
+                     K_Copy : Maps_For_Test.Cursor := K;
+                  begin
+                     M.Delete (K_Copy);
+                  end;
+               end if;
+            end loop;
+            Assert (False, "tampering check should have failed");
+         exception
+            when Program_Error =>
+               null;
+         end;
       end Tampering;
 
       --  XXX more to come!
@@ -173,7 +175,7 @@ package body Maps_Tests is
          Registration.Register_Routine
            (C, Out_Of_Range'Access, "out-of-range access");
          Registration.Register_Routine
-           (C, Tampering'Access, "tampering - no effect");
+           (C, Tampering'Access, "tampering detected");
       end Register_Tests;
 
    end Tests;
