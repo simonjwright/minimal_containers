@@ -14,17 +14,13 @@ Minimal\_Containers are compatible with Alire.
 
 In their unchecked form, both containers would misbehave if an element was deleted during a forward iteration over the container, in that the "next" element would be skipped.
 
-This would be undesirable for Maps, so a generation check has been introduced, raising `Program_Error` if this is detected.
+This would be undesirable, so a generation check has been introduced, raising `Program_Error` if this is detected.
 
-Unlike Maps, Vectors support both forward and reverse iteration; if it's necessary to delete some elements from a Vector, e.g. those that have become invalid, do it in a reverse loop,
+Unlike Maps, Vectors support both forward and reverse iteration; if it's necessary to delete some elements from a Vector, e.g. those that have become invalid, do it in a reverse loop over the index,
 ```
-for Cursor in reverse Vector.Iterate loop
-   if Is_Invalid (Element (Cursor)) then
-      declare
-         Cursor_Copy : Vectors.Cursor := Cursor;
-      begin
-         Vector.Delete (Cursor_Copy);
-      end;
+for Index in reverse Vector.First_Index .. Vector.Last_Index loop
+   if Is_Invalid (Vector.Element (Index)) then
+      Vector.Delete (Index);
    end if;
 end loop;
 ```

@@ -147,15 +147,37 @@ package body Vectors_Tests is
          end;
       end Out_Of_Range;
 
-      procedure Tampering (Unused : in out AUnit.Test_Cases.Test_Case'Class)
+      procedure Tampering_Forward
+        (Unused : in out AUnit.Test_Cases.Test_Case'Class)
       is
          V : Vector (Capacity => 5);
       begin
          for J in Element_Type range K .. P loop
             Append (V, J);
          end loop;
-         --  NB this has to be reverse, or we'll miss the element that
-         --  was next after the deleted one.
+         for Cursor in V.Iterate loop
+            if Element (Cursor) = M then
+               declare
+                  Cursor_Copy : Vectors_For_Test.Cursor := Cursor;
+               begin
+                  V.Delete (Cursor_Copy);
+               end;
+            end if;
+         end loop;
+         Assert (False, "tampering check (forward) should have failed");
+      exception
+         when Program_Error =>
+            null;
+      end Tampering_Forward;
+
+      procedure Tampering_Reverse
+        (Unused : in out AUnit.Test_Cases.Test_Case'Class)
+      is
+         V : Vector (Capacity => 5);
+      begin
+         for J in Element_Type range K .. P loop
+            Append (V, J);
+         end loop;
          for Cursor in reverse V.Iterate loop
             if Element (Cursor) = M then
                declare
@@ -165,10 +187,29 @@ package body Vectors_Tests is
                end;
             end if;
          end loop;
+         Assert (False, "tampering check (reverse) should have failed");
+      exception
+         when Program_Error =>
+            null;
+      end Tampering_Reverse;
+
+      procedure Deleting_In_Loop
+        (Unused : in out AUnit.Test_Cases.Test_Case'Class)
+      is
+         V : Vector (Capacity => 5);
+      begin
+         for J in Element_Type range K .. P loop
+            Append (V, J);
+         end loop;
+         for Index in reverse V.First_Index .. V.Last_Index loop
+            if V.Element (Index) = M then
+               V.Delete (Index);
+            end if;
+         end loop;
          Assert (V.Length = 4, "wrong length");
          Assert (V.Element (2) = L, "wrong element (2)");
          Assert (V.Element (3) = N, "wrong element (3)");
-      end Tampering;
+      end Deleting_In_Loop;
 
       --  XXX more to come!
 
@@ -188,7 +229,11 @@ package body Vectors_Tests is
          Registration.Register_Routine
            (C, Out_Of_Range'Access, "out-of-range access");
          Registration.Register_Routine
-           (C, Tampering'Access, "tampering - no effect");
+           (C, Tampering_Forward'Access, "tampering (forward) detected");
+         Registration.Register_Routine
+           (C, Tampering_Reverse'Access, "tampering (reverse) detected");
+         Registration.Register_Routine
+           (C, Deleting_In_Loop'Access, "deleting in loop");
       end Register_Tests;
 
    end Tests;

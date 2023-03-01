@@ -1,4 +1,4 @@
---  Minimal_Containers.Bounded_Hashed_Maps (spec)
+--  Minimal_Containers.Bounded_Vectors (spec)
 --
 --  Copyright (C) 2023 Simon Wright <simon@pushface.org>
 --
@@ -137,22 +137,27 @@ private
    subtype Array_Index is Capacity_Range range 1 .. Capacity_Range'Last;
    type Elements_Array is array (Array_Index range <>) of aliased Element_Type;
 
+   type Generation_Type is mod 2**32; -- for tampering checks
+
    type Vector (Capacity : Capacity_Range) is tagged record
-      Last     : Extended_Index := No_Index;
-      Elements : Elements_Array (1 .. Capacity);
+      Generation : Generation_Type := 0;
+      Last       : Extended_Index  := No_Index;
+      Elements   : Elements_Array (1 .. Capacity);
    end record;
 
-   type Vector_Access is access all Vector;
-   for Vector_Access'Storage_Size use 0;
+   type Vector_Access is access constant Vector with Storage_Size => 0;
 
    type Cursor is record
-      Container : Vector_Access;
-      Index     : Index_Type := Index_Type'First;
+      Container  : Vector_Access;
+      Generation : Generation_Type := 0;
+      Index      : Index_Type      := Index_Type'First;
    end record;
 
    Empty_Vector : constant Vector := (Capacity => 0, others => <>);
 
-   No_Element : constant Cursor := Cursor'(null, Index_Type'First);
+   No_Element : constant Cursor := (Container  => null,
+                                    Generation => 0,
+                                    Index      => Index_Type'First);
 
    type Iterator is new Vector_Iterator_Interfaces.Reversible_Iterator with
       record

@@ -79,6 +79,7 @@ is
                             - Index_Type'Pos (Index_Type'First)
                             + 1)
         := New_Item;
+      Container.Generation := Container.Generation + 1;
    end Append;
 
    procedure Delete (Container : in out Vector;
@@ -95,6 +96,7 @@ is
       Container.Elements (Idx .. Last_Idx - 1)
         := Container.Elements (Idx + 1 .. Last_Idx);
       Container.Last := Container.Last - 1;
+      Container.Generation := Container.Generation + 1;
    end Delete;
 
    procedure Delete (Container : in out Vector;
@@ -126,8 +128,9 @@ is
    function First (Container : Vector) return Cursor
      is (if Length (Container) = 0
          then No_Element
-         else Cursor'(Container => Container'Unrestricted_Access,
-                      Index     => Index_Type'First));
+         else Cursor'(Container  => Container'Unrestricted_Access,
+                      Generation => Container.Generation,
+                      Index      => Index_Type'First));
 
    function First_Element (Container : Vector) return Element_Type
    is (Element (Container, Index_Type'First));
@@ -140,8 +143,9 @@ is
    function Last (Container : Vector) return Cursor
      is (if Is_Empty (Container)
          then No_Element
-         else Cursor'(Container => Container'Unrestricted_Access,
-                      Index     => Container.Last));
+         else Cursor'(Container  => Container'Unrestricted_Access,
+                      Generation => Container.Generation,
+                      Index      => Container.Last));
 
    function Last_Element (Container : Vector) return Element_Type
      is (Element (Container, Last_Index (Container)));
@@ -152,6 +156,7 @@ is
          elsif Position.Index
            in Index_Type'First .. Index_Type'Pred (Position.Container.Last)
          then Cursor'(Container  => Position.Container,
+                      Generation => Position.Generation,
                       Index      => Index_Type'Succ (Position.Index))
          else No_Element);
 
@@ -161,6 +166,7 @@ is
            or else Position.Index = Index_Type'First
          then No_Element
          else Cursor'(Container  => Position.Container,
+                      Generation => Position.Generation,
                       Index      => Index_Type'Pred (Position.Index)));
 
    function Find_Index (Container : Vector;
@@ -219,6 +225,8 @@ is
          return No_Element;
       elsif Position.Container /= Object.Container then
          raise Program_Error with "Position designates the wrong Vector";
+      elsif Position.Generation /= Object.Container.Generation then
+         raise Program_Error with "The Vector has been tampered with";
       else
          return Next (Position);
       end if;
@@ -233,6 +241,8 @@ is
          return No_Element;
       elsif Position.Container /= Object.Container then
          raise Program_Error with "Position designates the wrong Vector";
+      elsif Position.Generation /= Object.Container.Generation then
+         raise Program_Error with "The Vector has been tampered with";
       else
          return Previous (Position);
       end if;
@@ -245,7 +255,10 @@ is
    is
    begin
       if The_Cursor.Container /= For_The_Container'Unrestricted_Access then
-         raise Constraint_Error with "cursor for different/no vector";
+         raise Constraint_Error with "Cursor for different/no Vector";
+      end if;
+      if The_Cursor.Generation /= For_The_Container.Generation then
+         raise Program_Error with "Vector has been tampered with";
       end if;
    end Check_Cursor_Validity;
 
