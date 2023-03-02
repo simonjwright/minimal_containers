@@ -50,6 +50,13 @@ is
    function Is_Empty (Container : Vector) return Boolean
      is (Length (Container) = 0);
 
+   procedure Clear (Container : in out Vector)
+   is
+   begin
+      Container.Last := No_Index;
+      Container.Generation := Container.Generation + 1;
+   end Clear;
+
    function Element (Container : Vector;
                      Index : Index_Type) return Element_Type
      is (if Index <= Container.Last
@@ -228,7 +235,7 @@ is
          end if;
 
          Sort (Container.Elements (1 .. Container.Length));
-     end Sort;
+      end Sort;
 
    end Generic_Sorting;
 

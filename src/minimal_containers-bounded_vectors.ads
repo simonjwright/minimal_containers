@@ -66,6 +66,10 @@ is
 
    function Is_Empty (Container : Vector) return Boolean;
 
+   procedure Clear (Container : in out Vector)
+   with
+     Post => Is_Empty (Container);
+
    function Element (Container : Vector;
                      Index : Index_Type) return Element_Type;
 

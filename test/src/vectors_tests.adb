@@ -63,6 +63,25 @@ package body Vectors_Tests is
          Assert (Length (V) = Capacity (V), "vector has wrong length");
       end Add_5;
 
+      procedure Clearing (Unused : in out AUnit.Test_Cases.Test_Case'Class)
+      is
+         V : Vector (Capacity => 5);
+         C : Cursor;
+         E : Element_Type;
+      begin
+         for J in Element_Type loop
+            Append (V, J);
+         end loop;
+         C := V.First;
+         V.Clear;
+         Assert (V.Length = 0, "vector not cleared");
+         E := Element (C);
+         Assert (False, "can use cursor on cleared vector");
+      exception
+         when Constraint_Error =>
+            null;
+      end Clearing;
+
       procedure Too_Many (Unused : in out AUnit.Test_Cases.Test_Case'Class)
       is
          V : Vector (Capacity => 4);
@@ -250,6 +269,8 @@ package body Vectors_Tests is
            (C, Initial'Access, "initial");
          Registration.Register_Routine
            (C, Add_5'Access, "add 5");
+         Registration.Register_Routine
+           (C, Clearing'Access, "clearing");
          Registration.Register_Routine
            (C, Too_Many'Access, "add too many");
          Registration.Register_Routine

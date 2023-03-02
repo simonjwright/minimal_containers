@@ -62,3 +62,8 @@ Using the "minimal" containers resulted in a reduction of 22% (37156 bytes) in t
 | :--------- | ---: | ---: | --: |
 | standard | 166956 | 1352 | 3768 |
 | minimal | 129800 | 1432 | 3800 |
+
+<!--
+Having converted the event queue to use minimal vectors (3 kinds,
+5 instances) we get 94128/1432/3816
+-->

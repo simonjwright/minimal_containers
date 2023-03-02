@@ -35,6 +35,9 @@ generic
 package Minimal_Containers.Bounded_Hashed_Maps
 is
 
+   pragma Unreferenced (Hash);
+   pragma Unreferenced (Equivalent_Keys);
+
    use Ada.Containers;
 
    type Map (Capacity : Count_Type;
