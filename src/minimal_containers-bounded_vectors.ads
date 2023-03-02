@@ -132,6 +132,18 @@ is
      (Container : Vector)
       return Vector_Iterator_Interfaces.Reversible_Iterator'Class;
 
+   --  Sorting  --
+
+   generic
+      with function "<" (Left, Right : Element_Type) return Boolean is <>;
+   package Generic_Sorting is
+
+      function Is_Sorted (Container : Vector) return Boolean;
+
+      procedure Sort (Container : in out Vector);
+
+   end Generic_Sorting;
+
 private
 
    subtype Array_Index is Capacity_Range range 1 .. Capacity_Range'Last;

@@ -20,6 +20,8 @@
 --  program; see the files COPYING3 and COPYING.RUNTIME respectively.
 --  If not, see <http://www.gnu.org/licenses/>.
 
+with Ada.Containers.Generic_Array_Sort;
+
 package body Minimal_Containers.Bounded_Vectors
 is
 
@@ -187,7 +189,50 @@ is
       return No_Index;
    end Find_Index;
 
-   --  Iteration --
+   --  Sorting  --
+
+   package body Generic_Sorting is
+
+      function Is_Sorted (Container : Vector) return Boolean is
+      begin
+         if Container.Last <= Index_Type'First then
+            return True;
+         end if;
+
+         declare
+            EA : Elements_Array renames Container.Elements;
+            Result : Boolean;
+         begin
+            Result := True;
+            for J in 1 .. Container.Length - 1 loop
+               if EA (J + 1) < EA (J) then
+                  Result := False;
+                  exit;
+               end if;
+            end loop;
+
+            return Result;
+         end;
+      end Is_Sorted;
+
+      procedure Sort (Container : in out Vector) is
+         procedure Sort is
+            new Generic_Array_Sort
+             (Index_Type   => Array_Index,
+              Element_Type => Element_Type,
+              Array_Type   => Elements_Array,
+              "<"          => "<");
+      begin
+         if Container.Last <= Index_Type'First then
+            return;
+         end if;
+
+         Sort (Container.Elements (1 .. Container.Length));
+     end Sort;
+
+   end Generic_Sorting;
+
+   --  Iteration  --
 
    function Element_For_Iteration (Container : Vector;
                                    Position  : Cursor) return Element_Type

@@ -4,7 +4,7 @@ In such an environment, it's normal to strip out unused code and data at link ti
 
 Unfortunately, it turns out that no primitive subprograms of tagged types can be stripped (they are all referenced by the dispatch table).
 
-These containers are still tagged, because (without compiler extensions) ColdFrame expects to use prefixed notation (_object_._primitive subprogram (...)_, as would users. However, the number of subprograms has been much reduced, and support packages aren't needed.
+These containers are still tagged, because (without compiler extensions) ColdFrame expects to use prefixed notation (_object_._primitive subprogram (...)_, as would users. However, the number of subprograms has been much reduced, and support packages aren't needed (except for sorting vectors).
 
 The containers provided are `Bounded_Hashed_Maps` and `Bounded_Vectors` (the ones required by ColdFrame in the Ravenscar version). Both support forward and reverse generalised read-only iteration.
 

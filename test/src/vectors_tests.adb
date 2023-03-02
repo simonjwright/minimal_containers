@@ -211,7 +211,37 @@ package body Vectors_Tests is
          Assert (V.Element (3) = N, "wrong element (3)");
       end Deleting_In_Loop;
 
-      --  XXX more to come!
+      procedure Sorting
+        (Unused : in out AUnit.Test_Cases.Test_Case'Class)
+      is
+         V : Vector (Capacity => 5);
+         V_Copy : Vector (Capacity => 5);
+         package Sort_Forward
+         is new Vectors_For_Test.Generic_Sorting ("<" => "<");
+         package Sort_Reverse
+         is new Vectors_For_Test.Generic_Sorting ("<" => ">");
+      begin
+         --  This loop leaves the last element slot unfilled.
+         for El in Element_Type range K .. N loop
+            Append (V, El);
+         end loop;
+         V_Copy := V;
+         Assert (Sort_Forward.Is_Sorted (V), "should be sorted (a)");
+         Assert (not Sort_Reverse.Is_Sorted (V), "should not be sorted (a)");
+         Sort_Forward.Sort (V);
+         Assert (V = V_Copy, "sorted Vector /= copy (a)");
+         Sort_Reverse.Sort (V);
+         Assert (V.Element (1) = N, "wrong element (1)");
+         Assert (V.Element (2) = M, "wrong element (2)");
+         Assert (V.Element (3) = L, "wrong element (3)");
+         Assert (V.Element (4) = K, "wrong element (4)");
+         Assert (not Sort_Forward.Is_Sorted (V), "should not be sorted (b)");
+         Assert (Sort_Reverse.Is_Sorted (V), "should be sorted (b)");
+         Sort_Forward.Sort (V);
+         Assert (Sort_Forward.Is_Sorted (V), "should be sorted (c)");
+         Assert (not Sort_Reverse.Is_Sorted (V), "should not be sorted (c)");
+         Assert (V = V_Copy, "sorted Vector /= copy (b)");
+      end Sorting;
 
       overriding procedure Register_Tests (C : in out T)
       is
@@ -234,6 +264,8 @@ package body Vectors_Tests is
            (C, Tampering_Reverse'Access, "tampering (reverse) detected");
          Registration.Register_Routine
            (C, Deleting_In_Loop'Access, "deleting in loop");
+         Registration.Register_Routine
+           (C, Sorting'Access, "sorting");
       end Register_Tests;
 
    end Tests;
