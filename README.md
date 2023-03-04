@@ -1,4 +1,4 @@
-The motivation for these containers was use in [ColdFrame](https://simonjwright.github.io/coldframe/), an open-source code generator backend for use with UML tools in a restricted environment (a BBC micro:bit).
+The motivation for these containers was use in [ColdFrame](https://simonjwright.github.io/coldframe/), an open-source code generator backend for use with UML tools in a restricted environment (for example, a BBC micro:bit).
 
 In such an environment, it's normal to strip out unused code and data at link time (`-gc-sections` with GNU `ld`, `-dead_strip` with Apple `ld`).
 
@@ -66,4 +66,6 @@ Using the "minimal" containers resulted in a reduction of 22% (37156 bytes) in t
 <!--
 Having converted the event queue to use minimal vectors (3 kinds,
 5 instances) we get 94128/1432/3816
+
+and again 94303/1432/3816
 -->
