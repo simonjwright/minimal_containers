@@ -67,7 +67,7 @@ package body Vectors_Tests is
       is
          V : Vector (Capacity => 5);
          C : Cursor;
-         E : Element_Type;
+         Unused_Element : Element_Type;
       begin
          for J in Element_Type loop
             Append (V, J);
@@ -75,7 +75,7 @@ package body Vectors_Tests is
          C := V.First;
          V.Clear;
          Assert (V.Length = 0, "vector not cleared");
-         E := Element (C);
+         Unused_Element := Element (C);
          Assert (False, "can use cursor on cleared vector");
       exception
          when Constraint_Error =>
