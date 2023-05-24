@@ -9,6 +9,7 @@ Unfortunately, it turns out that no primitive subprograms of tagged types can be
 
 These containers are still tagged, because (without compiler extensions) ColdFrame expects to use prefixed notation (_object_._primitive subprogram (...)_, as would users). However, the number of subprograms has been much reduced.
 """
+website="https://github.com/simonjwright/minimal_containers"
 licenses= "GPL-3.0-or-later WITH GCC-exception-3.1"
 version = "1.0.0"
 
