@@ -22,24 +22,24 @@ package body Vectors_Tests is
 
       use Ada.Containers; -- for Count_Type, Capacity_Error
 
-      type Index_Base is range 0 .. 6;
-      subtype Index_Type is Index_Base range 1 .. 5;
+      type Index_Base is range -1 .. 5;
+      subtype Index_Type is Index_Base range 0 .. 4;
 
       type Element_Type is (K, L, M, N, P);
 
       Expected_Values : constant array (Index_Type) of Element_Type
-        := (1 => K,
-            2 => L,
-            3 => M,
-            4 => N,
-            5 => P);
+        := (0 => K,
+            1 => L,
+            2 => M,
+            3 => N,
+            4 => P);
 
       Index_For : constant array (Element_Type) of Index_Type
-        := (K => 1,
-            L => 2,
-            M => 3,
-            N => 4,
-            P => 5);
+        := (K => 0,
+            L => 1,
+            M => 2,
+            N => 3,
+            P => 4);
 
       package Vectors_For_Test is new Minimal_Containers.Bounded_Vectors
         (Index_Type   => Index_Type,
@@ -107,7 +107,7 @@ package body Vectors_Tests is
             Append (V, Element_Type'Val (Count));
             Assert (Length (V) = Count_Type (Count + 1),
                     "vector has wrong length");
-            Assert (Element (V, Index_Type (Count + 1))
+            Assert (Element (V, Index_Type (Count))
                       = Element_Type'Val (Count),
                     "element has wrong value (a)");
             Count := Count + 1;
@@ -138,14 +138,14 @@ package body Vectors_Tests is
             Append (V, Expected_Values (J));
             Assert (Length (V) = Index_Type'Pos (J),
                     "vector has wrong length");
-            Assert (Element (V, J) = Expected_Values (J),
+            Assert (Element (V, J - 1) = Expected_Values (J),
                     "element has wrong value (a)");
          end loop;
          for J in Element_Type range L .. N loop
-            Assert (Find_Index (V, J) = Index_For (J),
+            Assert (Find_Index (V, J) = Index_For (Element_Type'Pred (J)),
                     "find_index found wrong index");
          end loop;
-         Assert (Find_Index (V, P) = No_Index,
+         Assert (Find_Index (V, K) = No_Index,
                  "find_index succeeded for missing element");
       end Finding_Index;
 
@@ -159,7 +159,7 @@ package body Vectors_Tests is
          declare
             Unused : Element_Type;
          begin
-            Unused := Element (V, 5);
+            Unused := Element (V, 4);
             Assert (False, "should have raised Constraint_Error");
          exception
             when Constraint_Error => null;
@@ -226,8 +226,8 @@ package body Vectors_Tests is
             end if;
          end loop;
          Assert (V.Length = 4, "wrong length");
-         Assert (V.Element (2) = L, "wrong element (2)");
-         Assert (V.Element (3) = N, "wrong element (3)");
+         Assert (V.Element (1) = L, "wrong element (1)");
+         Assert (V.Element (2) = N, "wrong element (2)");
       end Deleting_In_Loop;
 
       procedure Sorting
@@ -250,10 +250,10 @@ package body Vectors_Tests is
          Sort_Forward.Sort (V);
          Assert (V = V_Copy, "sorted Vector /= copy (a)");
          Sort_Reverse.Sort (V);
-         Assert (V.Element (1) = N, "wrong element (1)");
-         Assert (V.Element (2) = M, "wrong element (2)");
-         Assert (V.Element (3) = L, "wrong element (3)");
-         Assert (V.Element (4) = K, "wrong element (4)");
+         Assert (V.Element (0) = N, "wrong element (0)");
+         Assert (V.Element (1) = M, "wrong element (1)");
+         Assert (V.Element (2) = L, "wrong element (2)");
+         Assert (V.Element (3) = K, "wrong element (3)");
          Assert (not Sort_Forward.Is_Sorted (V), "should not be sorted (b)");
          Assert (Sort_Reverse.Is_Sorted (V), "should be sorted (b)");
          Sort_Forward.Sort (V);

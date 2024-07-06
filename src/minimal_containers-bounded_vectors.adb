@@ -1,6 +1,6 @@
 --  Minimal_Containers.Bounded_Vectors (body)
 --
---  Copyright (C) 2023 Simon Wright <simon@pushface.org>
+--  Copyright (C) 2023-2024 Simon Wright <simon@pushface.org>
 --
 --  Minimal_Containers is free software; you can redistribute it
 --  and/or modify it under terms of the GNU General Public License as
@@ -190,7 +190,7 @@ is
    begin
       for J in Start_Index .. Last_Index loop
          if Container.Elements (J) = Item then
-            return Extended_Index (J + Count_Type (Index_Type'First - 1));
+            return Extended_Index (J) + Index_Type'First - 1;
          end if;
       end loop;
       return No_Index;

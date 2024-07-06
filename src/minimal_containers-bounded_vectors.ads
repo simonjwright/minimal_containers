@@ -1,6 +1,6 @@
 --  Minimal_Containers.Bounded_Vectors (spec)
 --
---  Copyright (C) 2023 Simon Wright <simon@pushface.org>
+--  Copyright (C) 2023-2024 Simon Wright <simon@pushface.org>
 --
 --  Minimal_Containers is free software; you can redistribute it
 --  and/or modify it under terms of the GNU General Public License as
@@ -40,7 +40,8 @@ is
    No_Index : constant Extended_Index := Extended_Index'First;
 
    subtype Capacity_Range
-     is Count_Type range 0 .. Index_Type'Pos (Index_Type'Last);
+     is Count_Type
+     range 0 .. Count_Type (Index_Type'Last - Index_Type'First + 1);
 
    type Vector (Capacity : Capacity_Range) is tagged private
    with

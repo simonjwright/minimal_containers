@@ -8,6 +8,9 @@ These containers are still tagged, because (without compiler extensions) ColdFra
 
 The containers provided are `Bounded_Hashed_Maps` and `Bounded_Vectors` (the ones required by ColdFrame in the Ravenscar version). Both support forward and reverse generalised read-only iteration.
 
+`Bounded_Vectors` don't support constant or variable indexing.
+`Bounded_Hashed_Maps` don't have a `Clear` operation.
+
 Minimal\_Containers are compatible with Alire.
 
 ## Tampering checks ##
