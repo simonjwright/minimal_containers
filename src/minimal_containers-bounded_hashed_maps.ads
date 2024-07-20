@@ -70,6 +70,10 @@ is
 
    function Is_Empty (Container : Map) return Boolean;
 
+   procedure Clear (Container : in out Map)
+   with
+     Post => Container.Is_Empty;
+
    function Key (Position : Cursor) return Key_Type
      with Pre => Has_Element (Position);
 

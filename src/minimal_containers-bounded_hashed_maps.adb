@@ -51,6 +51,14 @@ package body Minimal_Containers.Bounded_Hashed_Maps is
    function Is_Empty (Container : Map) return Boolean
      is (Length (Container.Keys) = 0);
 
+   procedure Clear (Container : in out Map)
+   is
+   begin
+      Clear (Container.Keys);
+      Clear (Container.Elements);
+      Container.Generation := Container.Generation + 1;
+   end Clear;
+
    function Key (Position : Cursor) return Key_Type
    is
    begin

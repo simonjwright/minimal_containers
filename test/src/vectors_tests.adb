@@ -17,6 +17,12 @@ package body Vectors_Tests is
    use AUnit;
 
    package body Tests is
+
+      --  Check the issue where the Index_Type couldn't be Natural.
+      package Dummy_Vectors is new Minimal_Containers.Bounded_Vectors
+        (Index_Type   => Natural,
+         Element_Type => Boolean);
+
       overriding function Name (C : T) return AUnit.Message_String
         is (Format ("Vectors"));
 

@@ -41,7 +41,9 @@ is
 
    subtype Capacity_Range
      is Count_Type
-     range 0 .. Count_Type (Index_Type'Last - Index_Type'First + 1);
+     range 0 ..
+     Count_Type (Index_Type'Min (Index_Type'Base'Last - Index_Type'First + 1,
+                                 Index_Type'Base'Last));
 
    type Vector (Capacity : Capacity_Range) is tagged private
    with

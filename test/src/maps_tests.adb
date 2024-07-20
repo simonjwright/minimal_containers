@@ -39,6 +39,7 @@ package body Maps_Tests is
          M : Map (Capacity => 5, Modulus => 42);
       begin
          Assert (Length (M) = 0, "new map has non-zero length");
+         Assert (Is_Empty (M), "new map is not empty");
       end Initial;
 
       procedure Add_5 (Unused : in out AUnit.Test_Cases.Test_Case'Class)
@@ -47,9 +48,30 @@ package body Maps_Tests is
       begin
          for J in 1 .. 5 loop
             Insert (M, J, Ch'Val (J));
+            Assert (not Is_Empty (M), "map is empty");
             Assert (Length (M) = Count_Type (J), "map has wrong length");
          end loop;
       end Add_5;
+
+      procedure Clearing (Unused : in out AUnit.Test_Cases.Test_Case'Class)
+      is
+         M : Map (Capacity => 4, Modulus => 42);
+      begin
+         for J in 1 .. 5 loop
+            Insert (M, J, Ch'Val (J));
+         end loop;
+         M.Clear;
+         Assert (M.Is_Empty, "cleared map isn't empty");
+         Assert (M.Length = 0, "cleared map has non-zero length");
+         --  Add another 5
+         for J in 1 .. 5 loop
+            Insert (M, J, Ch'Val (J));
+            Assert (not Is_Empty (M), "map is empty");
+            Assert (Length (M) = Count_Type (J), "map has wrong length");
+         end loop;
+      exception
+         when Capacity_Error => null;
+      end Clearing;
 
       procedure Too_Many (Unused : in out AUnit.Test_Cases.Test_Case'Class)
       is
@@ -166,6 +188,8 @@ package body Maps_Tests is
            (C, Initial'Access, "initial");
          Registration.Register_Routine
            (C, Add_5'Access, "add 5");
+         Registration.Register_Routine
+           (C, Clearing'Access, "clearing");
          Registration.Register_Routine
            (C, Too_Many'Access, "add too many");
          Registration.Register_Routine
