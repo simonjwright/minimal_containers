@@ -1,6 +1,6 @@
 name = "test"
 description = "Test for minimal_containers"
-version = "1.2.0"
+version = "1.2.1"
 
 authors = ["Simon Wright"]
 maintainers = ["Simon Wright <simon@pushface.org>"]
@@ -15,4 +15,4 @@ minimal_containers = "*"
 minimal_containers = { path='..' }
 
 [[depends-on]]
-aunit = "^23.0.0"
+aunit = ">=23.0.0"
