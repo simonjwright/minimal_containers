@@ -10,8 +10,8 @@ package body Vectors_Tests is
       type T is new Test_Case with null record;
       overriding function Name (C : T) return AUnit.Message_String;
       overriding procedure Register_Tests (C : in out T);
-      --  procedure Set_Up (C : in out T);
-      --  procedure Tear_Down (C : in out t);
+   --  procedure Set_Up (C : in out T);
+   --  procedure Tear_Down (C : in out t);
    end Tests;
 
    use AUnit;
@@ -24,7 +24,7 @@ package body Vectors_Tests is
          Element_Type => Boolean);
 
       overriding function Name (C : T) return AUnit.Message_String
-        is (Format ("Vectors"));
+      is (Format ("Vectors"));
 
       use Ada.Containers; -- for Count_Type, Capacity_Error
 
@@ -35,17 +35,17 @@ package body Vectors_Tests is
 
       Expected_Values : constant array (Index_Type) of Element_Type
         := (0 => K,
-            1 => L,
-            2 => M,
-            3 => N,
-            4 => P);
+         1 => L,
+         2 => M,
+         3 => N,
+         4 => P);
 
       Index_For : constant array (Element_Type) of Index_Type
         := (K => 0,
-            L => 1,
-            M => 2,
-            N => 3,
-            P => 4);
+          L => 1,
+          M => 2,
+          N => 3,
+          P => 4);
 
       package Vectors_For_Test is new Minimal_Containers.Bounded_Vectors
         (Index_Type   => Index_Type,
@@ -71,8 +71,8 @@ package body Vectors_Tests is
 
       procedure Clearing (Unused : in out AUnit.Test_Cases.Test_Case'Class)
       is
-         V : Vector (Capacity => 5);
-         C : Cursor;
+         V              : Vector (Capacity => 5);
+         C              : Cursor;
          Unused_Element : Element_Type;
       begin
          for J in Element_Type loop
@@ -99,13 +99,15 @@ package body Vectors_Tests is
          end loop;
          Assert (False, "should have raised Capacity_Error");
       exception
-         when Capacity_Error => null;
-         when Ada.Assertions.Assertion_Error => null;
+         when Capacity_Error                 =>
+            null;
+         when Ada.Assertions.Assertion_Error =>
+            null;
       end Too_Many;
 
       procedure Values (Unused : in out AUnit.Test_Cases.Test_Case'Class)
       is
-         V : Vector (Capacity => 5);
+         V     : Vector (Capacity => 5);
          Count : Natural;
       begin
          Count := 0;
@@ -114,8 +116,8 @@ package body Vectors_Tests is
             Assert (Length (V) = Count_Type (Count + 1),
                     "vector has wrong length");
             Assert (Element (V, Index_Type (Count))
-                      = Element_Type'Val (Count),
-                    "element has wrong value (a)");
+                    = Element_Type'Val (Count),
+                     "element has wrong value (a)");
             Count := Count + 1;
          end loop;
          Count := 0;
@@ -149,7 +151,7 @@ package body Vectors_Tests is
          end loop;
          for J in Element_Type range L .. N loop
             Assert (Find_Index (V, J) = Index_For (Element_Type'Pred (J)),
-                    "find_index found wrong index");
+               "find_index found wrong index");
          end loop;
          Assert (Find_Index (V, K) = No_Index,
                  "find_index succeeded for missing element");
@@ -168,7 +170,8 @@ package body Vectors_Tests is
             Unused := Element (V, 4);
             Assert (False, "should have raised Constraint_Error");
          exception
-            when Constraint_Error => null;
+            when Constraint_Error =>
+               null;
          end;
       end Out_Of_Range;
 
@@ -239,7 +242,7 @@ package body Vectors_Tests is
       procedure Sorting
         (Unused : in out AUnit.Test_Cases.Test_Case'Class)
       is
-         V : Vector (Capacity => 5);
+         V      : Vector (Capacity => 5);
          V_Copy : Vector (Capacity => 5);
          package Sort_Forward
          is new Vectors_For_Test.Generic_Sorting ("<" => "<");
@@ -247,7 +250,7 @@ package body Vectors_Tests is
          is new Vectors_For_Test.Generic_Sorting ("<" => ">");
       begin
          --  This loop leaves the last element slot unfilled.
-         for El in Element_Type range K .. N loop
+            for El in Element_Type range K .. N loop
             Append (V, El);
          end loop;
          V_Copy := V;

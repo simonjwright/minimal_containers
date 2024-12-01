@@ -21,4 +21,12 @@ library project Minimal_Containers is
    package Builder is
       for Global_Compilation_Switches ("ada") use Compiler_Switches;
    end Builder;
+
+   package Pretty_Printer is
+      for Switches ("ada") use
+        (
+         "--source-line-breaks"
+        );
+   end Pretty_Printer;
+
 end Minimal_Containers;

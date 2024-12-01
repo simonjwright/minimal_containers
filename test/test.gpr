@@ -30,4 +30,11 @@ project Test is
       for Artifacts (".") use ("share");
    end Install;
 
+   package Pretty_Printer is
+      for Switches ("ada") use
+        (
+         "--source-line-breaks"
+        );
+   end Pretty_Printer;
+
 end Test;
